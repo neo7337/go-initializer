@@ -26,7 +26,7 @@ func getRestServer(manager lifecycle.ComponentManager) lifecycle.Component {
 	server.OnChange(func(prevState, newState lifecycle.ComponentState) {
 		if prevState == lifecycle.Unknown && newState == lifecycle.Starting {
 			server = router.HealthcheckRouterHandler(server)
-			// server = router.RouterHandler(server)
+			server = router.RouterHandler(server)
 		}
 	})
 	return server

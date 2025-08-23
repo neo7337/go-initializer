@@ -49,7 +49,7 @@ function App() {
     };
 
     // Handler for Generate action
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
         const newErrors: {moduleName?: string; name?: string; description?: string} = {};
         if (!moduleName.trim()) newErrors.moduleName = 'Module Name is required.';
         if (!name.trim()) newErrors.name = 'Name is required.';
@@ -65,9 +65,32 @@ function App() {
             name,
             description,
         };
-        // For now, just show the request body
-        alert('Request body:\n' + JSON.stringify(requestBody, null, 2));
-        // TODO: Send requestBody to backend
+
+        try {
+            const response = await fetch('http://localhost:8080/api/v1/project', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert('Failed to generate project: ' + errorText);
+                return;
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'project.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Error generating project: ' + err);
+        }
     };
 
     // Keep framework and other state always up to date for hotkey
