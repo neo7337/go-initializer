@@ -6,14 +6,35 @@ import Explore from './components/Explore';
 
 function App() {
     const [theme, setTheme] = useState('dark');
-    const [projectType, setProjectType] = useState('microservice');
-    const [goVersion, setGoVersion] = useState('1.25.0');
+    const [projectType, setProjectType] = useState('');
+    const [goVersion, setGoVersion] = useState('');
     const [framework, setFramework] = useState('');
     const [moduleName, setModuleName] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [touched, setTouched] = useState<{moduleName: boolean; name: boolean; description: boolean}>({moduleName: false, name: false, description: false});
-    const [errors, setErrors] = useState<{moduleName?: string; name?: string; description?: string}>({});
+    const [touched, setTouched] = useState<{
+        moduleName: boolean;
+        name: boolean;
+        description: boolean;
+        goVersion: boolean;
+        projectType: boolean;
+        framework: boolean;
+    }>({
+        moduleName: false,
+        name: false,
+        description: false,
+        goVersion: false,
+        projectType: false,
+        framework: false,
+    });
+    const [errors, setErrors] = useState<{
+        moduleName?: string;
+        name?: string;
+        description?: string;
+        goVersion?: string;
+        projectType?: string;
+        framework?: string;
+    }>({});
     const [goVersionOptions, setGoVersionOptions] = useState<{ version: string; label: string }[]>([]);
     const [supportedProjectTypes, setSupportedProjectTypes] = useState<{ type: string; label: string }[]>([]);
     const [supportedFrameworkOptions, setSupportedFrameworkOptions] = useState<Record<string, string[]>>({});
@@ -39,21 +60,41 @@ function App() {
 
     const handleProjectTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setProjectType(e.target.value);
+        setTouched(t => ({...t, projectType: true}));
+        setErrors(errs => ({...errs, projectType: e.target.value.trim() ? undefined : 'Project Type is required.'}));
     };
 
     const handleGoVersionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setGoVersion(e.target.value);
+        setTouched(t => ({...t, goVersion: true}));
+        setErrors(errs => ({...errs, goVersion: e.target.value.trim() ? undefined : 'Go Version is required.'}));
+    };
+
+    const handleFrameworkChange = (fw: string) => {
+        setFramework(fw);
+        setTouched(t => ({...t, framework: true}));
+        setErrors(errs => ({...errs, framework: fw.trim() ? undefined : 'Framework/Dependency is required.'}));
     };
 
     const validateInput = useCallback(() => {
-        const newErrors: {moduleName?: string; name?: string; description?: string} = {};
+        const newErrors: {moduleName?: string; name?: string; description?: string, projectType?: string, goVersion?: string, framework?: string} = {};
         if (!moduleName.trim()) newErrors.moduleName = 'Module Name is required.';
         if (!name.trim()) newErrors.name = 'Name is required.';
         if (!description.trim()) newErrors.description = 'Description is required.';
+        if (!projectType) newErrors.projectType = 'Project Type is required.';
+        if (!goVersion) newErrors.goVersion = 'Go Version is required.';
+        if (!framework) newErrors.framework = 'Framework/Dependency is required.';
         setErrors(newErrors);
-        setTouched({moduleName: true, name: true, description: true});
+        setTouched({
+            moduleName: true,
+            name: true,
+            description: true,
+            goVersion: true,
+            projectType: true,
+            framework: true,
+        });
         return Object.keys(newErrors).length === 0;
-    }, [moduleName, name, description]);
+    }, [moduleName, name, description, projectType, goVersion, framework]);
 
     // Handler for Generate action
     const handleGenerate = useCallback(() => {
@@ -193,6 +234,9 @@ function App() {
                                 );
                             })}
                         </div>
+                        {errors.goVersion && touched.goVersion && (
+                            <span style={{ color: '#ff4d4f', fontSize: 13, marginTop: 10, display: 'block' }}>{errors.goVersion}</span>
+                        )}
                     </section>
                     {/* Project Type Card */}
                     <section style={{ background: 'var(--card-bg)', borderRadius: 16, boxShadow: '0 2px 12px 0 rgba(0,0,0,0.08)', padding: '2rem', marginBottom: 0, color: 'var(--text)' }}>
@@ -233,6 +277,9 @@ function App() {
                                 );
                             })}
                         </div>
+                        {errors.projectType && touched.projectType && (
+                            <span style={{ color: '#ff4d4f', fontSize: 13, marginTop: 10, display: 'block' }}>{errors.projectType}</span>
+                        )}
                     </section>
 
                     {/* Framework/Dependency Card */}
@@ -264,12 +311,15 @@ function App() {
                                         value={fw}
                                         style={{ display: 'none' }}
                                         checked={framework === fw}
-                                        onChange={() => setFramework(fw)}
+                                        onChange={() => handleFrameworkChange(fw)}
                                     />
                                     {fw}
                                 </label>
                             ))}
                         </div>
+                        {errors.framework && touched.framework && (
+                            <span style={{ color: '#ff4d4f', fontSize: 13, marginTop: 10, display: 'block' }}>{errors.framework}</span>
+                        )}
                     </section>
                     {/* Project Metadata Card */}
                     <section style={{ background: 'var(--card-bg)', borderRadius: 16, boxShadow: '0 2px 12px 0 rgba(0,0,0,0.08)', padding: '2rem', marginBottom: 0, color: 'var(--text)' }}>
