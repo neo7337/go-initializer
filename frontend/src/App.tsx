@@ -1,12 +1,51 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { generateProject, getMetaData } from './service';
 import { toGoVersionOptions, toSupportedFrameworkOptionsMap, toSupportedProjectTypes } from './utils';
 import Explore from './components/Explore';
-import { Theme, Card, Button, Text, Flex, Heading, RadioGroup } from '@radix-ui/themes';
+import { Theme, Card, Button, Text, Flex, Heading, RadioGroup, Checkbox } from '@radix-ui/themes';
+
 
 function App() {
+    // Docker support state
+    const [dockerSupport, setDockerSupport] = useState(false);
+    // Addons state and types
+    type AddonCategory = 'cache' | 'database' | 'other';
+    type AddonState = {
+        cache: string[];
+        database: string[];
+        other: string[];
+    };
+    const [selectedAddons, setSelectedAddons] = useState<AddonState>({
+        cache: [],
+        database: [],
+        other: [],
+    });
+    const addonOptions: Record<AddonCategory, { value: string; label: string; description: string }[]> = {
+        cache: [
+            { value: 'redis', label: 'Redis', description: 'In-memory cache and message broker' },
+            { value: 'memcached', label: 'Memcached', description: 'High-performance distributed memory caching system' },
+        ],
+        database: [
+            { value: 'gorm', label: 'Gorm', description: 'Popular ORM library for Golang' },
+            { value: 'ent', label: 'Ent', description: 'Entity framework for Go' },
+        ],
+        other: [
+            { value: 'zap', label: 'Zap', description: 'Blazing fast, structured, leveled logging in Go' },
+            { value: 'cobra', label: 'Cobra', description: 'Commander for modern Go CLI interactions' },
+        ],
+    };
+    const handleAddonChange = (category: AddonCategory, value: string) => {
+        setSelectedAddons(prev => {
+            const alreadySelected = prev[category].includes(value);
+            return {
+                ...prev,
+                [category]: alreadySelected
+                    ? prev[category].filter((v: string) => v !== value)
+                    : [...prev[category], value],
+            };
+        });
+    };
     const [theme, setTheme] = useState('dark');
     const [projectType, setProjectType] = useState('');
     const [goVersion, setGoVersion] = useState('');
@@ -194,7 +233,7 @@ function App() {
                                 setErrors(errs => ({...errs, goVersion: val.trim() ? undefined : 'Go Version is required.'}));
                             }}
                             orientation="horizontal"
-                            style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}
+                            style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}
                         >
                             {goVersionOptions.map((ver) => (
                                 <RadioGroup.Item key={ver.version} value={ver.version} style={{ marginRight: 0 }}>
@@ -217,7 +256,7 @@ function App() {
                                 setErrors(errs => ({...errs, projectType: val.trim() ? undefined : 'Project Type is required.'}));
                             }}
                             orientation="horizontal"
-                            style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}
+                            style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}
                         >
                             {supportedProjectTypes.map((project_type) => {
                                 const value = project_type.type.toLowerCase().replace(/ /g, '-');
@@ -244,7 +283,7 @@ function App() {
                                 setErrors(errs => ({...errs, framework: val.trim() ? undefined : 'Framework/Dependency is required.'}));
                             }}
                             orientation="horizontal"
-                            style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}
+                            style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}
                         >
                             {currentFrameworkOptions.map((fw) => (
                                 <RadioGroup.Item key={fw} value={fw} style={{ marginRight: 0 }}>
@@ -255,6 +294,70 @@ function App() {
                         {errors.framework && touched.framework && (
                             <Text color="red" size="2" mt="2" as="span">{errors.framework}</Text>
                         )}
+                    </Card>
+                    {/* Addons Card */}
+                    <Card style={{ marginBottom: 0 }}>
+                        <Heading size="4" mb="3">Addons</Heading>
+                        <Flex direction="row" gap="6" wrap="wrap">
+                            {/* Cache Addons */}
+                            <div style={{ minWidth: 180 }}>
+                                <Text as="div" size="3" weight="bold" mb="2">Cache</Text>
+                                <Flex gap="4" direction="column">
+                                    {addonOptions.cache.map(opt => (
+                                        <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                            <Checkbox
+                                                checked={selectedAddons.cache.includes(opt.value)}
+                                                onCheckedChange={() => handleAddonChange('cache', opt.value)}
+                                            />
+                                            <Text as="span" size="2">{opt.label}</Text>
+                                        </label>
+                                    ))}
+                                </Flex>
+                            </div>
+                            {/* Database Addons */}
+                            <div style={{ minWidth: 180 }}>
+                                <Text as="div" size="3" weight="bold" mb="2">Database</Text>
+                                <Flex gap="4" direction="column">
+                                    {addonOptions.database.map(opt => (
+                                        <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                            <Checkbox
+                                                checked={selectedAddons.database.includes(opt.value)}
+                                                onCheckedChange={() => handleAddonChange('database', opt.value)}
+                                            />
+                                            <Text as="span" size="2">{opt.label}</Text>
+                                        </label>
+                                    ))}
+                                </Flex>
+                            </div>
+                            {/* Other Libraries */}
+                            <div style={{ minWidth: 180 }}>
+                                <Text as="div" size="3" weight="bold" mb="2">Other Libraries</Text>
+                                <Flex gap="4" direction="column">
+                                    {addonOptions.other.map(opt => (
+                                        <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                            <Checkbox
+                                                checked={selectedAddons.other.includes(opt.value)}
+                                                onCheckedChange={() => handleAddonChange('other', opt.value)}
+                                            />
+                                            <Text as="span" size="2">{opt.label}</Text>
+                                        </label>
+                                    ))}
+                                </Flex>
+                            </div>
+                        </Flex>
+                    </Card>
+                    {/* Docker Support */}
+                    <Card style={{ marginBottom: 0 }}>
+                        <Flex align="center" gap="3">
+                            <Checkbox
+                                checked={dockerSupport}
+                                onCheckedChange={() => setDockerSupport(v => !v)}
+                                id="docker-support"
+                            />
+                            <label htmlFor="docker-support" style={{ cursor: 'pointer' }}>
+                                <Text as="span" size="3" weight="bold">Add Docker support</Text>
+                            </label>
+                        </Flex>
                     </Card>
                     {/* Project Metadata Card */}
                     <Card style={{ marginBottom: 0 }}>
