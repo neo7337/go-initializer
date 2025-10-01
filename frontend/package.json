@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@radix-ui/themes": "^3.2.1",
         "@tailwindcss/postcss": "^4.1.12",
         "@types/jest": "^27.5.2",
         "@types/node": "^16.18.126",
