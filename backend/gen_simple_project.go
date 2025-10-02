@@ -78,6 +78,24 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 		for addonType, addons := range request.Addons {
 			if addonType == "logging" {
 			}
+			if addonType == "database" {
+				dbPath := fmt.Sprintf("%s/internal/database/database.go", folderName)
+				dbFile, err := zipWriter.Create(dbPath)
+				if err != nil {
+					log.Printf("[ERROR] Failed to create database.go in zip: %v", err)
+					return nil, errors.New("failed to create database.go in zip")
+				}
+				dbContent, err := GenerateDatabaseAddon(addons)
+				if err != nil {
+					log.Printf("[ERROR] Failed to generate database.go content: %v", err)
+					return nil, errors.New("failed to generate database.go content")
+				}
+				_, err = dbFile.Write(dbContent)
+				if err != nil {
+					log.Printf("[ERROR] Failed to write database.go: %v", err)
+					return nil, errors.New("failed to write database.go")
+				}
+			}
 			if addonType == "cache" {
 				cachePath := fmt.Sprintf("%s/internal/cache/cache.go", folderName)
 				cacheFile, err := zipWriter.Create(cachePath)
