@@ -39,8 +39,11 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 	}
 
 	// 2. go.mod (minimal content)
-	gomodContent := GenerateGoMod(request)
-	fmt.Println("Generated go.mod content:\n", gomodContent) // Debug log
+	gomodContent, err := GenerateGoModV2(request)
+	if err != nil {
+		log.Printf("[ERROR] Failed to generate go.mod content: %v", err)
+		return nil, errors.New("failed to generate go.mod content")
+	}
 	gomodFile, err := zipWriter.Create(fmt.Sprintf("%s/go.mod", folderName))
 	if err != nil {
 		log.Printf("[ERROR] Failed to create go.mod in zip: %v", err)
@@ -68,6 +71,32 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 	if err != nil {
 		log.Printf("[ERROR] Failed to write main.go: %v", err)
 		return nil, errors.New("failed to write main.go")
+	}
+
+	// check addons and include if any
+	if len(request.Addons) > 0 {
+		for addonType, addons := range request.Addons {
+			if addonType == "logging" {
+			}
+			if addonType == "cache" {
+				cachePath := fmt.Sprintf("%s/internal/cache/cache.go", folderName)
+				cacheFile, err := zipWriter.Create(cachePath)
+				if err != nil {
+					log.Printf("[ERROR] Failed to create cache.go in zip: %v", err)
+					return nil, errors.New("failed to create cache.go in zip")
+				}
+				cacheContent, err := GenerateCacheAddon(addons)
+				if err != nil {
+					log.Printf("[ERROR] Failed to generate cache.go content: %v", err)
+					return nil, errors.New("failed to generate cache.go content")
+				}
+				_, err = cacheFile.Write(cacheContent)
+				if err != nil {
+					log.Printf("[ERROR] Failed to write cache.go: %v", err)
+					return nil, errors.New("failed to write cache.go")
+				}
+			}
+		}
 	}
 
 	// 4. internal/service.go
