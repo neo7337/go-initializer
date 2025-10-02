@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { generateProject, getMetaData } from './service';
-import { toGoVersionOptions, toSupportedFrameworkOptionsMap, toSupportedProjectTypes } from './utils';
+import { toGoVersionOptions, toSupportedAddons, toSupportedFrameworkOptionsMap, toSupportedProjectTypes } from './utils';
 import Explore from './components/Explore';
 import { Theme, Card, Button, Text, Flex, Heading, RadioGroup, Checkbox } from '@radix-ui/themes';
 
@@ -79,6 +79,7 @@ function App() {
     const [goVersionOptions, setGoVersionOptions] = useState<{ version: string; label: string }[]>([]);
     const [supportedProjectTypes, setSupportedProjectTypes] = useState<{ type: string; label: string }[]>([]);
     const [supportedFrameworkOptions, setSupportedFrameworkOptions] = useState<Record<string, string[]>>({});
+    // const [addonOptions, setAddonOptions] = useState<Record<AddonCategory, { value: string; label: string; description: string }[]>>([]);
     const [showExplore, setShowExplore] = useState(false);
 
     // Framework options based on project type
@@ -98,8 +99,6 @@ function App() {
     const toggleTheme = () => {
         setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
     };
-
-
 
     const validateInput = useCallback(() => {
         const newErrors: {moduleName?: string; name?: string; description?: string, projectType?: string, goVersion?: string, framework?: string} = {};
@@ -184,14 +183,14 @@ function App() {
             .then(data => {
                 // Handle metadata
                 var formattedGoVersions = toGoVersionOptions(data.supportedGoVersions || []);
-                console.log(formattedGoVersions)
                 setGoVersionOptions(formattedGoVersions);
                 var formattedSupportedProjectTypes = toSupportedProjectTypes(data.supportedProjectTypes || []);
-                console.log(formattedSupportedProjectTypes)
                 setSupportedProjectTypes(formattedSupportedProjectTypes);
                 var formattedSupportedFrameworkOptions = toSupportedFrameworkOptionsMap(data.supportedFrameworks || []);
-                console.log(formattedSupportedFrameworkOptions)
                 setSupportedFrameworkOptions(formattedSupportedFrameworkOptions);
+                var formattedSupportedAddons = toSupportedAddons(data.supportedAddons || []);
+                console.log(formattedSupportedAddons)
+                // setAddonOptions(formattedSupportedAddons);
             })
             .catch(error => {
                 console.error('Error fetching metadata:', error);

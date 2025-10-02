@@ -12,6 +12,7 @@ func MetaHandler(ctx *gin.Context) {
 		"supportedProjectTypes": SupportedProjectTypesLabelsMap,
 		"supportedGoVersions":   SupportedGoVersionsMap,
 		"supportedFrameworks":   SupportedFrameworksMap,
+		"supportedAddons":       SupportedAddonsMap,
 	})
 }
 

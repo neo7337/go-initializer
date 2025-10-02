@@ -55,6 +55,22 @@ var SupportedFrameworksMap = map[string]map[string]bool{
 	},
 }
 
+var SupportedAddonsMap = map[string]map[string]bool{
+	"cache": {
+		"redis":     true,
+		"memcached": true,
+	},
+	"database": {
+		"gorm": true,
+		"ent":  true,
+	},
+	"other": {
+		"zap":    true,
+		"logrus": true,
+		"cobra":  true,
+	},
+}
+
 var DependencyMap = map[string][]string{
 	"golly":    {"github.com/nandlabs/golly"},
 	"gin":      {"github.com/gin-gonic/gin"},

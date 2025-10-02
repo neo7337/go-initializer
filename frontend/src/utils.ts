@@ -46,3 +46,17 @@ export function toSupportedProjectTypes(projectTypes: Record<string, string>): {
       label: projectTypes[type],
     }));
 }
+
+export function toSupportedAddons(supportedAddons: Record<string, Record<string, boolean>>): Record<string, string[]> {
+    const labelMap: Record<string, string> = {
+
+    }
+    const result: Record<string, string[]> = {};
+    Object.entries(supportedAddons).forEach(([category, addons]) => {
+        const arr = Object.keys(addons)
+            .filter((fw) => addons[fw])
+            .map((fw) => (labelMap[fw] || fw));
+        result[category] = arr;
+    });
+    return result;
+}
