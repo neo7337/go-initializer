@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Card, Button, Flex, Heading, Text } from '@radix-ui/themes';
 
 const blogPosts = [
 	{
@@ -28,47 +29,67 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 	const selectedPost = blogPosts.find((post) => post.id === selectedId);
 
 	return (
-		<div style={{ width: '100%', padding: '2rem 0' }}>
-			<div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', display: 'flex', gap: 32 }}>
+		<Flex direction="column" width="100%" style={{ padding: '2rem 0' }}>
+			<Flex style={{ maxWidth: 1200, width: '100%', margin: '0 auto', gap: 32 }}>
 				{/* Sidebar: Titles */}
-				<aside style={{ width: 300, minWidth: 220, background: 'var(--content-bg)', borderRadius: 16, boxShadow: '0 2px 12px 0 rgba(0,0,0,0.04)', padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: 0, height: 'fit-content' }}>
-					<h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 1.5rem 2rem', color: 'var(--text)' }}>Explore</h2>
-					{blogPosts.map((post) => (
-						<button
-							key={post.id}
-							onClick={() => setSelectedId(post.id)}
-							style={{
-								background: selectedId === post.id ? '#ffd70022' : 'none',
-								color: selectedId === post.id ? '#ffd700' : 'var(--text)',
-								border: 'none',
-								borderLeft: selectedId === post.id ? '4px solid #ffd700' : '4px solid transparent',
-								textAlign: 'left',
-								padding: '1.1rem 2rem',
-								fontWeight: selectedId === post.id ? 700 : 500,
-								fontSize: 18,
-								cursor: 'pointer',
-								outline: 'none',
-								transition: 'background 0.2s, color 0.2s',
-								width: '100%',
-								borderRadius: 0,
-							}}
-						>
-							{post.title}
-						</button>
-					))}
-				</aside>
+				<Card style={{ width: 300, minWidth: 220, padding: '2rem 0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 0 }}>
+					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 2rem' }}>Explore</Heading>
+					<ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+						{blogPosts.map((post, idx) => (
+							<li key={post.id} style={{ margin: 0, padding: 0 }}>
+								<Button
+									variant={selectedId === post.id ? 'solid' : 'ghost'}
+									color={selectedId === post.id ? 'gold' : 'gray'}
+									onClick={() => setSelectedId(post.id)}
+									size="3"
+									radius="large"
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: 16,
+										justifyContent: 'flex-start',
+										fontWeight: selectedId === post.id ? 700 : 500,
+										fontSize: 18,
+										borderLeft: selectedId === post.id ? '4px solid #ffd700' : '4px solid transparent',
+										borderRadius: 12,
+										padding: '0.9rem 2rem 0.9rem 2.2rem',
+										background: selectedId === post.id ? '#fffbe6' : undefined,
+										color: selectedId === post.id ? '#bfa100' : undefined,
+										textAlign: 'left',
+										boxShadow: selectedId === post.id ? '0 2px 8px 0 #ffd70022' : undefined,
+										transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
+										outline: selectedId === post.id ? '2px solid #ffd700' : undefined,
+									}}
+									aria-current={selectedId === post.id ? 'true' : undefined}
+									tabIndex={0}
+								>
+									<span style={{ fontSize: 20, opacity: selectedId === post.id ? 1 : 0.5, transition: 'opacity 0.2s', marginRight: 4 }}>
+										{selectedId === post.id ? '★' : '•'}
+									</span>
+									<span style={{ whiteSpace: 'pre-line' }}>{post.title}</span>
+								</Button>
+							</li>
+						))}
+					</ul>
+				</Card>
 				{/* Main Content: Selected Post */}
-				   <main style={{ flex: 1, height: '100%', background: 'var(--card-bg)', borderRadius: 16, boxShadow: '0 2px 12px 0 rgba(0,0,0,0.08)', padding: '2.5rem 2.5rem 2.5rem 4.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 400, position: 'relative' }}>
-					   <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8, marginTop: 0 }}>{selectedPost?.title}</h1>
-					   <div style={{ fontSize: 18, lineHeight: 1.7, color: 'var(--text)' }}>{selectedPost?.content}</div>
-					   <div style={{ marginTop: 'auto', textAlign: 'center' }}>
-						   <button onClick={onBack} style={{ color: '#ffd700', fontWeight: 700, fontSize: 17, textDecoration: 'none', border: '2px solid #ffd700', borderRadius: 8, padding: '0.6rem 1.7rem', background: 'var(--card-bg)', transition: 'background 0.2s, color 0.2s', cursor: 'pointer' }}>
-							   ← Back to Generator
-						   </button>
-					   </div>
-				   </main>
-			</div>
-		</div>
+				<Card style={{ flex: 1, minHeight: 400, padding: '2.5rem 2.5rem 2.5rem 4.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', position: 'relative' }}>
+					<Heading size="7" weight="bold" style={{ marginBottom: 8, marginTop: 0 }}>{selectedPost?.title}</Heading>
+					<Text size="5" style={{ lineHeight: 1.7 }}>{selectedPost?.content}</Text>
+					<Flex style={{ marginTop: 'auto', textAlign: 'center', justifyContent: 'center' }}>
+						<Button
+							onClick={onBack}
+							variant="outline"
+							color="gold"
+							size="3"
+							style={{ fontWeight: 700, fontSize: 17 }}
+						>
+							← Back to Generator
+						</Button>
+					</Flex>
+				</Card>
+			</Flex>
+		</Flex>
 	);
 };
 
