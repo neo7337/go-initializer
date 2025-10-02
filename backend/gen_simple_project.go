@@ -79,6 +79,9 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 			if addonType == "logging" {
 			}
 			if addonType == "database" {
+				if len(addons) == 0 {
+					continue
+				}
 				dbPath := fmt.Sprintf("%s/internal/database/database.go", folderName)
 				dbFile, err := zipWriter.Create(dbPath)
 				if err != nil {
@@ -97,6 +100,9 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 				}
 			}
 			if addonType == "cache" {
+				if len(addons) == 0 {
+					continue
+				}
 				cachePath := fmt.Sprintf("%s/internal/cache/cache.go", folderName)
 				cacheFile, err := zipWriter.Create(cachePath)
 				if err != nil {
@@ -129,6 +135,22 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 	if err != nil {
 		log.Printf("[ERROR] Failed to write service.go: %v", err)
 		return nil, errors.New("failed to write service.go")
+	}
+
+	// check for docker support
+	if request.DockerSupport {
+		dockerfilePath := fmt.Sprintf("%s/Dockerfile", folderName)
+		content := GenerateDockerfile(request)
+		dockerfile, err := zipWriter.Create(dockerfilePath)
+		if err != nil {
+			log.Printf("[ERROR] Failed to create Dockerfile in zip: %v", err)
+			return nil, errors.New("failed to create Dockerfile in zip")
+		}
+		_, err = dockerfile.Write([]byte(content))
+		if err != nil {
+			log.Printf("[ERROR] Failed to write Dockerfile: %v", err)
+			return nil, errors.New("failed to write Dockerfile")
+		}
 	}
 
 	err = zipWriter.Close()
