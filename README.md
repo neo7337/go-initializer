@@ -13,7 +13,30 @@ Go Initializer is a modern web-based tool to quickly scaffold Go projects with y
 
 ## Usage
 
-1. **Start the Frontend**
+### Docker Setup (Recommended)
+
+**Production Mode:**
+```sh
+docker-compose up --build
+```
+
+**Development Mode:**
+```sh
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+Access the application at [http://localhost:3000](http://localhost:3000)
+
+### Manual Setup
+
+1. **Start the Backend**
+	- Navigate to the `backend` directory:
+	  ```sh
+	  cd backend
+	  go run .
+	  ```
+
+2. **Start the Frontend**
 	- Navigate to the `frontend` directory:
 	  ```sh
 	  cd frontend
@@ -22,10 +45,10 @@ Go Initializer is a modern web-based tool to quickly scaffold Go projects with y
 	  ```
 	- Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-2. **Fill in the Form**
+3. **Fill in the Form**
 	- Select your desired project type, Go version, and framework/dependency.
 	- Enter your module name, project name, and description.
-	- Click **GENERATE** to scaffold your Go project (backend integration required).
+	- Click **GENERATE** to scaffold your Go project.
 
 ## Project Structure
 
