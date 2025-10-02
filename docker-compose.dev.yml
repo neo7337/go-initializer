@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: go-initializer-backend-dev
+    ports:
+      - "8181:8181"
+    environment:
+      - GIN_MODE=debug
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+    networks:
+      - app-network
+    command: go run .
+
+  frontend:
+    image: node:18-alpine
+    container_name: go-initializer-frontend-dev
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:8181
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+    command: sh -c "npm install && npm start"
+
+networks:
+  app-network:
+    driver: bridge
