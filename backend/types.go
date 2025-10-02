@@ -1,13 +1,14 @@
 package main
 
 type CreateProjectRequest struct {
-	ProjectType string              `json:"projectType"`
-	GoVersion   string              `json:"goVersion"`
-	Framework   string              `json:"framework"`
-	ModuleName  string              `json:"moduleName"`
-	Name        string              `json:"name"`
-	Description string              `json:"description"`
-	Addons      map[string][]string `json:"selectedAddons,omitempty"` // New field for addons
+	ProjectType   string              `json:"projectType"`
+	GoVersion     string              `json:"goVersion"`
+	Framework     string              `json:"framework"`
+	ModuleName    string              `json:"moduleName"`
+	Name          string              `json:"name"`
+	Description   string              `json:"description"`
+	Addons        map[string][]string `json:"selectedAddons,omitempty"` // New field for addons
+	DockerSupport bool                `json:"dockerSupport"`            // New field for Docker support
 }
 
 var SupportedProjectTypesMap = map[string]bool{

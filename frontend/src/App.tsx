@@ -130,7 +130,8 @@ function App() {
             moduleName,
             name,
             description,
-            selectedAddons
+            selectedAddons,
+            dockerSupport
         };
         console.log(requestBody)
         generateProject(requestBody)
@@ -149,7 +150,7 @@ function App() {
                 alert('Error:\n' + error.message);
             });
 
-    }, [validateInput, projectType, goVersion, framework, moduleName, name, description, selectedAddons]);
+    }, [validateInput, projectType, goVersion, framework, moduleName, name, description, selectedAddons, dockerSupport]);
 
     // Keep framework and other state always up to date for hotkey
     const frameworkRef = useRef(framework);
