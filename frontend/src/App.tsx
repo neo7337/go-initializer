@@ -78,13 +78,13 @@ function App() {
     }>({});
     const [goVersionOptions, setGoVersionOptions] = useState<{ version: string; label: string }[]>([]);
     const [supportedProjectTypes, setSupportedProjectTypes] = useState<{ type: string; label: string }[]>([]);
-    const [supportedFrameworkOptions, setSupportedFrameworkOptions] = useState<Record<string, string[]>>({});
+    const [supportedFrameworkOptions, setSupportedFrameworkOptions] = useState<Record<string, { label: string; value: string }[]>>({});
     // const [addonOptions, setAddonOptions] = useState<Record<AddonCategory, { value: string; label: string; description: string }[]>>([]);
     const [showExplore, setShowExplore] = useState(false);
 
     // Framework options based on project type
     const currentFrameworkOptions = React.useMemo(() => {
-        return supportedFrameworkOptions[projectType] || ['None'];
+        return supportedFrameworkOptions[projectType] || [];
     }, [projectType, supportedFrameworkOptions]);
 
     useEffect(() => {
@@ -130,7 +130,9 @@ function App() {
             moduleName,
             name,
             description,
+            selectedAddons
         };
+        console.log(requestBody)
         generateProject(requestBody)
             .then(blob => {
                 const filename = 'project.zip';
@@ -147,7 +149,7 @@ function App() {
                 alert('Error:\n' + error.message);
             });
 
-    }, [validateInput, projectType, goVersion, framework, moduleName, name, description]);
+    }, [validateInput, projectType, goVersion, framework, moduleName, name, description, selectedAddons]);
 
     // Keep framework and other state always up to date for hotkey
     const frameworkRef = useRef(framework);
@@ -284,11 +286,14 @@ function App() {
                             orientation="horizontal"
                             style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}
                         >
-                            {currentFrameworkOptions.map((fw) => (
-                                <RadioGroup.Item key={fw} value={fw} style={{ marginRight: 0 }}>
-                                    <Text as="span" size="3" weight={framework === fw ? 'bold' : 'regular'}>{fw}</Text>
+                            {currentFrameworkOptions === undefined || currentFrameworkOptions.length === 0 ? (
+                                <Text as="span" size="3" weight="regular">No frameworks available for the selected project type.</Text>
+                            ) : currentFrameworkOptions.map((fw) => (
+                                <RadioGroup.Item key={fw.value} value={fw.value} style={{ marginRight: 0 }}>
+                                    <Text as="span" size="3" weight={framework === fw.value ? 'bold' : 'regular'}>{fw.label}</Text>
                                 </RadioGroup.Item>
                             ))}
+                            
                         </RadioGroup.Root>
                         {errors.framework && touched.framework && (
                             <Text color="red" size="2" mt="2" as="span">{errors.framework}</Text>
