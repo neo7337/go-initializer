@@ -1,12 +1,13 @@
 package main
 
 type CreateProjectRequest struct {
-	ProjectType string `json:"projectType"`
-	GoVersion   string `json:"goVersion"`
-	Framework   string `json:"framework"`
-	ModuleName  string `json:"moduleName"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ProjectType string              `json:"projectType"`
+	GoVersion   string              `json:"goVersion"`
+	Framework   string              `json:"framework"`
+	ModuleName  string              `json:"moduleName"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Addons      map[string][]string `json:"selectedAddons,omitempty"` // New field for addons
 }
 
 var SupportedProjectTypesMap = map[string]bool{
@@ -72,18 +73,20 @@ var SupportedAddonsMap = map[string]map[string]bool{
 }
 
 var DependencyMap = map[string][]string{
-	"golly":    {"github.com/nandlabs/golly"},
-	"gin":      {"github.com/gin-gonic/gin"},
-	"echo":     {"github.com/labstack/echo/v4"},
-	"fiber":    {"github.com/gofiber/fiber/v2"},
-	"gorm":     {"gorm.io/gorm", "gorm.io/driver/postgres"},
-	"ent":      {"entgo.io/ent/cmd/ent"},
-	"sqlx":     {"github.com/jmoiron/sqlx", "github.com/lib/pq"},
-	"zap":      {"go.uber.org/zap"},
-	"logrus":   {"github.com/sirupsen/logrus"},
-	"zerolog":  {"github.com/rs/zerolog"},
-	"viper":    {"github.com/spf13/viper"},
-	"cobra":    {"github.com/spf13/cobra", "github.com/spf13/pflag"},
-	"testify":  {"github.com/stretchr/testify"},
-	"httptest": {"net/http/httptest"},
+	"golly":     {"oss.nandlabs.io/golly"},
+	"gin":       {"github.com/gin-gonic/gin"},
+	"echo":      {"github.com/labstack/echo/v4"},
+	"fiber":     {"github.com/gofiber/fiber/v2"},
+	"gorm":      {"gorm.io/gorm", "gorm.io/driver/postgres"},
+	"ent":       {"entgo.io/ent/cmd/ent"},
+	"sqlx":      {"github.com/jmoiron/sqlx", "github.com/lib/pq"},
+	"zap":       {"go.uber.org/zap"},
+	"logrus":    {"github.com/sirupsen/logrus"},
+	"zerolog":   {"github.com/rs/zerolog"},
+	"viper":     {"github.com/spf13/viper"},
+	"cobra":     {"github.com/spf13/cobra", "github.com/spf13/pflag"},
+	"testify":   {"github.com/stretchr/testify"},
+	"httptest":  {"net/http/httptest"},
+	"redis":     {"github.com/redis/go-redis/v9"},
+	"memcached": {"github.com/bradfitz/gomemcache/memcache"},
 }

@@ -8,45 +8,6 @@ import (
 	"log"
 )
 
-func GenerateMicroservice(request CreateProjectRequest) (*bytes.Buffer, error) {
-	// Implementation for generating a microservice project based on input
-	// generate a zip file in memory
-
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-
-	// Create a folder with the project name and write files inside it
-	folderName := request.Name
-	if folderName == "" {
-		folderName = "project"
-	}
-
-	// Example: add a README.md file inside the folder
-	readmeContent := fmt.Sprintf("# %s\n\n%s", request.Name, request.Description)
-	readmeFile, err := zipWriter.Create(fmt.Sprintf("%s/README.md", folderName))
-	if err != nil {
-		log.Printf("[ERROR] Failed to create file in zip: %v", err)
-		err = errors.New("failed to create file in zip")
-		return nil, err
-	}
-	_, err = readmeFile.Write([]byte(readmeContent))
-	if err != nil {
-		log.Printf("[ERROR] Failed to write to zip: %v", err)
-		err = errors.New("failed to write to zip file")
-		return nil, err
-	}
-
-	// Add more files as needed based on request
-	err = zipWriter.Close()
-	if err != nil {
-		log.Printf("[ERROR] Failed to close zip writer: %v", err)
-		err = errors.New("failed to finalize zip file")
-		return nil, err
-	}
-
-	return buf, nil
-}
-
 // myproject/
 // ├── cmd/
 // │   └── myproject/
@@ -78,8 +39,11 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 	}
 
 	// 2. go.mod (minimal content)
-	gomodContent := GenerateGoMod(folderName, request.GoVersion, request.Framework, request.ProjectType)
-	fmt.Println("Generated go.mod content:\n", gomodContent) // Debug log
+	gomodContent, err := GenerateGoModV2(request)
+	if err != nil {
+		log.Printf("[ERROR] Failed to generate go.mod content: %v", err)
+		return nil, errors.New("failed to generate go.mod content")
+	}
 	gomodFile, err := zipWriter.Create(fmt.Sprintf("%s/go.mod", folderName))
 	if err != nil {
 		log.Printf("[ERROR] Failed to create go.mod in zip: %v", err)
@@ -91,18 +55,66 @@ func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error)
 		return nil, errors.New("failed to write go.mod")
 	}
 
-	// 3. cmd/myproject/main.go
-	mainGoContent := "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Hello from main!\")\n}\n"
+	// 3. cmd/myproject/main.go using GenerateMain
 	mainGoPath := fmt.Sprintf("%s/cmd/%s/main.go", folderName, folderName)
 	mainGoFile, err := zipWriter.Create(mainGoPath)
 	if err != nil {
 		log.Printf("[ERROR] Failed to create main.go in zip: %v", err)
 		return nil, errors.New("failed to create main.go in zip")
 	}
-	_, err = mainGoFile.Write([]byte(mainGoContent))
+	mainGoContent, err := GenerateMainContent()
+	if err != nil {
+		log.Printf("[ERROR] Failed to generate main.go content: %v", err)
+		return nil, errors.New("failed to generate main.go content")
+	}
+	_, err = mainGoFile.Write(mainGoContent)
 	if err != nil {
 		log.Printf("[ERROR] Failed to write main.go: %v", err)
 		return nil, errors.New("failed to write main.go")
+	}
+
+	// check addons and include if any
+	if len(request.Addons) > 0 {
+		for addonType, addons := range request.Addons {
+			if addonType == "logging" {
+			}
+			if addonType == "database" {
+				dbPath := fmt.Sprintf("%s/internal/database/database.go", folderName)
+				dbFile, err := zipWriter.Create(dbPath)
+				if err != nil {
+					log.Printf("[ERROR] Failed to create database.go in zip: %v", err)
+					return nil, errors.New("failed to create database.go in zip")
+				}
+				dbContent, err := GenerateDatabaseAddon(addons)
+				if err != nil {
+					log.Printf("[ERROR] Failed to generate database.go content: %v", err)
+					return nil, errors.New("failed to generate database.go content")
+				}
+				_, err = dbFile.Write(dbContent)
+				if err != nil {
+					log.Printf("[ERROR] Failed to write database.go: %v", err)
+					return nil, errors.New("failed to write database.go")
+				}
+			}
+			if addonType == "cache" {
+				cachePath := fmt.Sprintf("%s/internal/cache/cache.go", folderName)
+				cacheFile, err := zipWriter.Create(cachePath)
+				if err != nil {
+					log.Printf("[ERROR] Failed to create cache.go in zip: %v", err)
+					return nil, errors.New("failed to create cache.go in zip")
+				}
+				cacheContent, err := GenerateCacheAddon(addons)
+				if err != nil {
+					log.Printf("[ERROR] Failed to generate cache.go content: %v", err)
+					return nil, errors.New("failed to generate cache.go content")
+				}
+				_, err = cacheFile.Write(cacheContent)
+				if err != nil {
+					log.Printf("[ERROR] Failed to write cache.go: %v", err)
+					return nil, errors.New("failed to write cache.go")
+				}
+			}
+		}
 	}
 
 	// 4. internal/service.go

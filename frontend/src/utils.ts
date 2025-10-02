@@ -1,5 +1,5 @@
-// Converts supportedFrameworks object to Record<string, string[]> for UI
-export function toSupportedFrameworkOptionsMap(supportedFrameworks: Record<string, Record<string, boolean>>): Record<string, string[]> {
+// Converts supportedFrameworks object to Record<string, { label: string; value: string }[]> for UI
+export function toSupportedFrameworkOptionsMap(supportedFrameworks: Record<string, Record<string, boolean>>): Record<string, { label: string; value: string }[]> {
   const labelMap: Record<string, string> = {
     golly: 'golly (recommended)',
     gin: 'Gin',
@@ -11,11 +11,11 @@ export function toSupportedFrameworkOptionsMap(supportedFrameworks: Record<strin
     urfave: 'urfave/cli',
     kingpin: 'Kingpin',
   };
-  const result: Record<string, string[]> = {};
+  const result: Record<string, { label: string; value: string }[]> = {};
   Object.entries(supportedFrameworks).forEach(([ptype, frameworks]) => {
     const arr = Object.keys(frameworks)
       .filter((fw) => frameworks[fw])
-      .map((fw) => (labelMap[fw] || fw));
+      .map((fw) => ({ 'label': (labelMap[fw] || fw), 'value': fw }));
     result[ptype] = arr;
   });
   return result;
