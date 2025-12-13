@@ -74,10 +74,10 @@ var SupportedAddonsMap = map[string]map[string]bool{
 }
 
 var DependencyMap = map[string][]string{
-	"golly":     {"oss.nandlabs.io/golly"},
-	"gin":       {"github.com/gin-gonic/gin"},
-	"echo":      {"github.com/labstack/echo/v4"},
-	"fiber":     {"github.com/gofiber/fiber/v2"},
+	"golly":     {"oss.nandlabs.io/golly v1.2.9"},
+	"gin":       {"github.com/gin-gonic/gin v1.11.0"},
+	"echo":      {"github.com/labstack/echo/v4 v4.14.0"},
+	"fiber":     {"github.com/gofiber/fiber/v2 v2.52.10"},
 	"gorm":      {"gorm.io/gorm", "gorm.io/driver/postgres"},
 	"ent":       {"entgo.io/ent/cmd/ent"},
 	"sqlx":      {"github.com/jmoiron/sqlx", "github.com/lib/pq"},
@@ -88,6 +88,6 @@ var DependencyMap = map[string][]string{
 	"cobra":     {"github.com/spf13/cobra", "github.com/spf13/pflag"},
 	"testify":   {"github.com/stretchr/testify"},
 	"httptest":  {"net/http/httptest"},
-	"redis":     {"github.com/redis/go-redis/v9"},
+	"redis":     {"github.com/redis/go-redis/v9 v9.17.2"},
 	"memcached": {"github.com/bradfitz/gomemcache/memcache"},
 }
