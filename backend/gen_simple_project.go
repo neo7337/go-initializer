@@ -16,7 +16,7 @@ import (
 // │   └── service.go
 // ├── go.mod
 // └── README.md
-func GenerateSimpleProjecet(request CreateProjectRequest) (*bytes.Buffer, error) {
+func GenerateSimpleProject(request CreateProjectRequest) (*bytes.Buffer, error) {
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 

@@ -39,7 +39,7 @@ func GenerateHandler(ctx *gin.Context) {
 		resp := SuccessResponseBody{Data: buf.Bytes()}
 		resp.GenerateResponse(ctx)
 	case "simple-project":
-		buf, err := GenerateSimpleProjecet(request)
+		buf, err := GenerateSimpleProject(request)
 		if err != nil {
 			log.Printf("[ERROR] Failed to generate project: %v", err)
 			resp := ErrorResponseBody{
