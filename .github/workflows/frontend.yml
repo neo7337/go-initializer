@@ -1,0 +1,31 @@
+name: 🐍 🖥️ Frontend Build and Test
+on:
+    pull_request:
+        branches: [main]
+        paths:
+            - 'frontend/**' # Triggers only when changes are made inside the frontend folder
+            - '.github/workflows/frontend.yml' # Also trigger if the workflow file itself changes
+    push:
+        branches: [main]
+        paths:
+            - 'frontend/**' # Triggers only when changes are made inside the frontend folder
+            - '.github/workflows/frontend.yml' # Also trigger if the workflow file itself changes
+
+jobs:
+    build_and_test_frontend:
+        name: Build Frontend
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: ./frontend
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+        - name: Install dependencies
+          run: npm install
+        - name: Build frontend
+          run: CI=false npm run build
