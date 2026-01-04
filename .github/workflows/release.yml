@@ -1,0 +1,96 @@
+name: Release App
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    # Step 1: Detect which folders have changed
+    detect-changes:
+        runs-on: ubuntu-latest
+        outputs:
+            frontend: ${{ steps.filter.outputs.frontend || steps.check-first.outputs.is_first }}
+            backend: ${{ steps.filter.outputs.backend || steps.check-first.outputs.is_first }}
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+            
+            - name: Check if this is the first release
+              id: check-first
+              run: |
+                # Count how many tags exist. 
+                # If only 1 tag exists, it's this current release (the first one).
+                TAG_COUNT=$(git tag | wc -l)
+                if [ "$TAG_COUNT" -le 1 ]; then
+                    echo "is_first=true" >> $GITHUB_OUTPUT
+                else
+                    echo "is_first=false" >> $GITHUB_OUTPUT
+                fi
+            
+            - name: Check for file changes
+              uses: dorny/paths-filter@v3
+              id: filter
+              # We only run this if it's NOT the first release to avoid errors
+              if: steps.check-first.outputs.is_first == 'false'
+              with:
+                filters: |
+                    frontend:
+                        - 'frontend/**'
+                    backend:
+                        - 'backend/**'
+    
+    # Step 2: Build and push Frontend (If only frontend is changed)
+    build-frontend:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.frontend == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+            
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_PASSWORD }}
+                
+            - name: Build and push frontend
+              uses: docker/build-push-action@v5
+              with:
+                context: ./frontend
+                push: true
+                tags: |
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:latest
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ github.event.release.tag_name }}
+            
+            - name: Log out from Docker Hub
+              run: docker logout
+    
+    # Step 3: Build and push backend (only if backend changed)
+    build-backend:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.frontend == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+            
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_PASSWORD }}
+                
+            - name: Build and push backend
+              uses: docker/build-push-action@v5
+              with:
+                context: ./backend
+                push: true
+                tags: |
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:latest
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:${{ github.event.release.tag_name }}
+
+            - name: Log out from Docker Hub
+              run: docker logout
