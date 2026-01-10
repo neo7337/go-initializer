@@ -3,7 +3,6 @@ name: Release App
 on:
     release:
         types: [published]
-    workflow_dispatch: # Allows manual trigger from the actions tab
 
 jobs:
     # Step 1: Detect which folders have changed
@@ -63,7 +62,7 @@ jobs:
     # Step 2: Build and push Frontend (If only frontend is changed)
     build-frontend:
         needs: detect-changes
-        if: always()
+        if: needs.detect-changes.outputs.frontend == 'true'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Code
@@ -90,7 +89,7 @@ jobs:
     # Step 3: Build and push backend (only if backend changed)
     build-backend:
         needs: detect-changes
-        if: always()
+        if: needs.detect-changes.outputs.backend == 'true'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Code

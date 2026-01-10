@@ -23,7 +23,7 @@ func NewRouter(v *validator.Validate) *gin.Engine {
 	}))
 
 	service.GET("/healthz", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, "server is up and running")
+		ctx.JSON(http.StatusOK, "Server is up and running")
 	})
 
 	service.GET("/meta", MetaHandler)
