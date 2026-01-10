@@ -3,6 +3,7 @@ name: Release App
 on:
     release:
         types: [published]
+    workflow_dispatch: # Allows manual trigger from the actions tab
 
 jobs:
     # Step 1: Detect which folders have changed
@@ -11,19 +12,34 @@ jobs:
         outputs:
             frontend: ${{ steps.filter.outputs.frontend || steps.check-first.outputs.is_first }}
             backend: ${{ steps.filter.outputs.backend || steps.check-first.outputs.is_first }}
+            current_tag: ${{ steps.get-tags.outputs.current_tag }}
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
               with:
                 fetch-depth: 0
+
+            - name: Resolve Current and Previous Tags
+              id: get-tags
+              run: |
+                # 1. Get current tag (either from the release event or the latest available tag)
+                if [ "${{ github.event_name }}" == "release" ]; then
+                    CUR_TAG="${{ github.event.release.tag_name }}"
+                else
+                    CUR_TAG=$(git tag --sort=-creatordate | head -n 1)
+                fi
+                
+                # 2. Get the tag before the current one
+                PREV_TAG=$(git tag --sort=-creatordate | grep -A 1 "^${CUR_TAG}$" | sed -n '2p')
+                
+                echo "current_tag=$CUR_TAG" >> $GITHUB_OUTPUT
+                echo "previous_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+                echo "Building for tag: $CUR_TAG (Previous: $PREV_TAG)"
             
             - name: Check if this is the first release
               id: check-first
               run: |
-                # Count how many tags exist. 
-                # If only 1 tag exists, it's this current release (the first one).
-                TAG_COUNT=$(git tag | wc -l)
-                if [ "$TAG_COUNT" -le 1 ]; then
+                if [ -z "${{ steps.get-tags.outputs.previous_tag }}" ]; then
                     echo "is_first=true" >> $GITHUB_OUTPUT
                 else
                     echo "is_first=false" >> $GITHUB_OUTPUT
@@ -35,6 +51,9 @@ jobs:
               # We only run this if it's NOT the first release to avoid errors
               if: steps.check-first.outputs.is_first == 'false'
               with:
+                base: ${{ steps.get-tags.outputs.previous_tag }}
+                # We compare the previous tag against the current tag/commit
+                ref: ${{ steps.get-tags.outputs.current_tag }}
                 filters: |
                     frontend:
                         - 'frontend/**'
@@ -44,7 +63,7 @@ jobs:
     # Step 2: Build and push Frontend (If only frontend is changed)
     build-frontend:
         needs: detect-changes
-        if: needs.detect-changes.outputs.frontend == 'true'
+        if: always()
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Code
@@ -71,7 +90,7 @@ jobs:
     # Step 3: Build and push backend (only if backend changed)
     build-backend:
         needs: detect-changes
-        if: needs.detect-changes.outputs.frontend == 'true'
+        if: always()
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Code
@@ -94,3 +113,26 @@ jobs:
 
             - name: Log out from Docker Hub
               run: docker logout
+
+    create-summary:
+        needs: [detect-changes, build-frontend, build-backend]
+        runs-on: ubuntu-latest
+        if: always() # Ensure this runs even if builds are skipped
+        steps:
+        - name: Generate Summary
+          run: |
+            echo "### 🚀 Release Build Summary" >> $GITHUB_STEP_SUMMARY
+            echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "${{ needs.detect-changes.outputs.frontend }}" == "true" ]; then
+                echo "| Frontend | ✅ Built and Pushed |" >> $GITHUB_STEP_SUMMARY
+            else
+                echo "| Frontend | ⏩ Skipped (No changes) |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "${{ needs.detect-changes.outputs.backend }}" == "true" ]; then
+                echo "| Backend | ✅ Built and Pushed |" >> $GITHUB_STEP_SUMMARY
+            else
+                echo "| Backend | ⏩ Skipped (No changes) |" >> $GITHUB_STEP_SUMMARY
+            fi
