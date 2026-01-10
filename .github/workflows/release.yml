@@ -82,7 +82,7 @@ jobs:
                 push: true
                 tags: |
                     ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:latest
-                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ github.event.release.tag_name }}
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ needs.detect-changes.outputs.current_tag }}
             
             - name: Log out from Docker Hub
               run: docker logout
@@ -109,7 +109,7 @@ jobs:
                 push: true
                 tags: |
                     ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:latest
-                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:${{ github.event.release.tag_name }}
+                    ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:${{ needs.detect-changes.outputs.current_tag }}
 
             - name: Log out from Docker Hub
               run: docker logout
