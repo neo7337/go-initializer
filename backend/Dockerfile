@@ -4,11 +4,11 @@ FROM golang:1.24.4-alpine AS builder
 WORKDIR /app
 
 # Copy go mod files
-COPY backend/go.mod backend/go.sum ./
+COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 # Copy source code
-COPY backend/ ./
+COPY ./ ./
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
