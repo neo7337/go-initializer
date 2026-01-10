@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: go-initializer-backend
     ports:
       - "8181:8181"
@@ -16,11 +16,11 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: go-initializer-frontend
     ports:
-      - "3000:3000"
+      - "8001:8001"
     environment:
       - REACT_APP_API_URL=http://localhost:8181
     depends_on:
