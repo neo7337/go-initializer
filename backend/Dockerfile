@@ -31,6 +31,6 @@ RUN chown -R appuser:appgroup /app
 
 USER appuser
 
-EXPOSE 8181
+EXPOSE 8182
 
 CMD ["./main"]

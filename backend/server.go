@@ -15,7 +15,7 @@ func Start() {
 	routes := NewRouter(validate)
 
 	server := &http.Server{
-		Addr:           ":8181",
+		Addr:           ":8182",
 		Handler:        routes,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
