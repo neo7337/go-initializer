@@ -4,6 +4,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+ARG API_BASE_URL
+
+# Set environment variables for the build
+ENV REACT_APP_API_URL=${API_BASE_URL}
+
 RUN npm run build
 
 # Stage 2: Serve with Nginx as Non-Root

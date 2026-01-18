@@ -82,6 +82,8 @@ jobs:
                 tags: |
                     ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:latest
                     ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ needs.detect-changes.outputs.current_tag }}
+                build-args: |
+                    API_BASE_URL=${{ secrets.API_BASE_URL }}
             
             - name: Log out from Docker Hub
               run: docker logout
