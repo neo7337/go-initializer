@@ -1,92 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Card, Button, Flex, Heading, Text } from '@radix-ui/themes';
+import docsConfig, { DocPage } from '../docsConfig';
 
-const blogPosts = [
-	{
-		id: 1,
-		title: 'Getting Started with Go Initializer',
-		content: `Go Initializer helps you scaffold Go projects with best practices and modern frameworks. Select your project type, Go version, and framework to generate a ready-to-use starter kit.`,
-	},
-	{
-		id: 2,
-		title: 'Microservices Best Practices',
-		content: `Learn how to structure your Go microservices for scalability and maintainability. Explore recommended folder structures, dependency management, and testing strategies.`,
-	},
-	{
-		id: 3,
-		title: 'Choosing a Go Web Framework',
-		content: `Compare popular Go web frameworks like Gin, Echo, and Fiber. Understand their strengths, community support, and when to use each for your project.`,
-	},
-	{
-		id: 4,
-		title: 'Community Resources',
-		content: `Find curated links to Go tutorials, open-source projects, and community forums to accelerate your learning and development.`,
-	},
-];
+const allPages: DocPage[] = docsConfig.flatMap((g) => g.pages);
 
 const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-	const [selectedId, setSelectedId] = useState(blogPosts[0].id);
-	const selectedPost = blogPosts.find((post) => post.id === selectedId);
+	const [selectedId, setSelectedId] = useState(allPages[0].id);
+	const [content, setContent] = useState('');
+	const [loading, setLoading] = useState(true);
+
+	const selectedPage = allPages.find((p) => p.id === selectedId)!;
+
+	useEffect(() => {
+		setLoading(true);
+		setContent('');
+		fetch(selectedPage.file)
+			.then((res) => {
+				if (!res.ok) throw new Error(`Failed to load ${selectedPage.file}`);
+				return res.text();
+			})
+			.then((text) => {
+				setContent(text);
+				setLoading(false);
+			})
+			.catch(() => {
+				setContent('_Could not load page content._');
+				setLoading(false);
+			});
+	}, [selectedPage.file]);
 
 	return (
 		<Flex direction="column" width="100%" style={{ padding: '2rem 0' }}>
-			<Flex style={{ maxWidth: 1200, width: '100%', margin: '0 auto', gap: 32 }}>
-				{/* Sidebar: Titles */}
-				<Card style={{ width: 300, minWidth: 220, padding: '2rem 0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 0 }}>
-					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 2rem' }}>Explore</Heading>
-					<ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-						{blogPosts.map((post, idx) => (
-							<li key={post.id} style={{ margin: 0, padding: 0 }}>
-								<Button
-									variant={selectedId === post.id ? 'solid' : 'ghost'}
-									color={selectedId === post.id ? 'gold' : 'gray'}
-									onClick={() => setSelectedId(post.id)}
-									size="3"
-									radius="large"
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 16,
-										justifyContent: 'flex-start',
-										fontWeight: selectedId === post.id ? 700 : 500,
-										fontSize: 18,
-										borderLeft: selectedId === post.id ? '4px solid #ffd700' : '4px solid transparent',
-										borderRadius: 12,
-										padding: '0.9rem 2rem 0.9rem 2.2rem',
-										background: selectedId === post.id ? '#fffbe6' : undefined,
-										color: selectedId === post.id ? '#bfa100' : undefined,
-										textAlign: 'left',
-										boxShadow: selectedId === post.id ? '0 2px 8px 0 #ffd70022' : undefined,
-										transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
-										outline: selectedId === post.id ? '2px solid #ffd700' : undefined,
-									}}
-									aria-current={selectedId === post.id ? 'true' : undefined}
-									tabIndex={0}
-								>
-									<span style={{ fontSize: 20, opacity: selectedId === post.id ? 1 : 0.5, transition: 'opacity 0.2s', marginRight: 4 }}>
-										{selectedId === post.id ? '★' : '•'}
-									</span>
-									<span style={{ whiteSpace: 'pre-line' }}>{post.title}</span>
-								</Button>
-							</li>
-						))}
-					</ul>
-				</Card>
-				{/* Main Content: Selected Post */}
-				<Card style={{ flex: 1, minHeight: 400, padding: '2.5rem 2.5rem 2.5rem 4.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', position: 'relative' }}>
-					<Heading size="7" weight="bold" style={{ marginBottom: 8, marginTop: 0 }}>{selectedPost?.title}</Heading>
-					<Text size="5" style={{ lineHeight: 1.7 }}>{selectedPost?.content}</Text>
-					<Flex style={{ marginTop: 'auto', textAlign: 'center', justifyContent: 'center' }}>
+			<Flex style={{ maxWidth: 1200, width: '100%', margin: '0 auto', gap: 32, alignItems: 'flex-start' }}>
+				{/* Sidebar */}
+				<Card style={{ width: 280, minWidth: 220, padding: '2rem 0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 0 }}>
+					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 1.5rem' }}>Explore</Heading>
+					{docsConfig.map((group) => (
+						<div key={group.group} style={{ marginBottom: '1.25rem' }}>
+							<Text
+								size="1"
+								weight="bold"
+								style={{
+									textTransform: 'uppercase',
+									letterSpacing: '0.08em',
+									color: '#888',
+									padding: '0 0 0.4rem 1.5rem',
+									display: 'block',
+								}}
+							>
+								{group.group}
+							</Text>
+							<ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+								{group.pages.map((page) => {
+									const active = selectedId === page.id;
+									return (
+										<li key={page.id} style={{ margin: 0, padding: 0 }}>
+											<Button
+												variant="ghost"
+												onClick={() => setSelectedId(page.id)}
+												size="2"
+												style={{
+													width: '100%',
+													justifyContent: 'flex-start',
+													fontWeight: active ? 700 : 400,
+													fontSize: 15,
+													borderLeft: active ? '3px solid #ffd700' : '3px solid transparent',
+													borderRadius: 0,
+													padding: '0.55rem 1.5rem',
+													background: active ? 'rgba(255, 215, 0, 0.08)' : undefined,
+													color: active ? '#bfa100' : undefined,
+													transition: 'background 0.15s, color 0.15s',
+												}}
+												aria-current={active ? 'page' : undefined}
+											>
+												{page.title}
+											</Button>
+										</li>
+									);
+								})}
+							</ul>
+						</div>
+					))}
+					<Flex style={{ padding: '1.5rem 1.5rem 0.5rem' }}>
 						<Button
 							onClick={onBack}
 							variant="outline"
 							color="gold"
-							size="3"
-							style={{ fontWeight: 700, fontSize: 17 }}
+							size="2"
+							style={{ width: '100%', fontWeight: 700 }}
 						>
 							← Back to Generator
 						</Button>
 					</Flex>
+				</Card>
+
+				{/* Main Content */}
+				<Card style={{ flex: 1, minHeight: 500, padding: '2.5rem 3rem', overflowY: 'auto' }}>
+					{loading ? (
+						<Text size="3" style={{ color: '#888' }}>Loading…</Text>
+					) : (
+						<div className="docs-content">
+							<ReactMarkdown remarkPlugins={[remarkGfm]}>
+								{content}
+							</ReactMarkdown>
+						</div>
+					)}
 				</Card>
 			</Flex>
 		</Flex>
