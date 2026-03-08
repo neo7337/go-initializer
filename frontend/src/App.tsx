@@ -203,7 +203,7 @@ function App() {
     // const navigate = useNavigate();
     return (
         <Theme appearance={theme === 'dark' ? 'dark' : 'light'}>
-            <div className="App" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', color: 'var(--text)', transition: 'background 0.3s, color 0.3s' }}>
+            <div className="App" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background)', color: 'var(--text)', transition: 'background 0.3s, color 0.3s', overflow: showExplore ? 'hidden' : 'auto' }}>
             {/* Header */}
             <header style={{ background: 'var(--navbar-bg)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--navbar-text)' }}>
                 <Flex align="center" justify="between" style={{ width: '100%' }}>
@@ -219,7 +219,7 @@ function App() {
             </header>
             
             {/* Main Content */}
-            <main style={{ flex: 1, padding: '2.5rem 1rem', background: 'var(--content-bg)', color: 'var(--text)', display: 'grid', gridTemplateColumns: '1fr', gap: 32, maxWidth: 1200, width: '100%', margin: '0 auto' }}>
+            <main style={showExplore ? { flex: 1, background: 'var(--content-bg)', color: 'var(--text)', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 } : { flex: 1, padding: '2.5rem 1rem', background: 'var(--content-bg)', color: 'var(--text)', display: 'grid', gridTemplateColumns: '1fr', gap: 32, maxWidth: 1200, width: '100%', margin: '0 auto' }}>
                 {showExplore ? (
                     <Explore onBack={() => setShowExplore(false)} />
                 ) : (

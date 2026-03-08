@@ -32,10 +32,10 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 	}, [selectedPage.file]);
 
 	return (
-		<Flex direction="column" width="100%" style={{ padding: '2rem 0' }}>
-			<Flex style={{ maxWidth: 1200, width: '100%', margin: '0 auto', gap: 32, alignItems: 'flex-start' }}>
+		<Flex direction="column" width="100%" style={{ padding: '2rem', height: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+			<Flex style={{ width: '100%', gap: 32, alignItems: 'stretch', flex: 1, overflow: 'hidden' }}>
 				{/* Sidebar */}
-				<Card style={{ width: 280, minWidth: 220, padding: '2rem 0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 0 }}>
+				<Card style={{ width: 280, minWidth: 220, padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: 0, overflowY: 'auto', flexShrink: 0 }}>
 					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 1.5rem' }}>Explore</Heading>
 					{docsConfig.map((group) => (
 						<div key={group.group} style={{ marginBottom: '1.25rem' }}>
@@ -97,16 +97,18 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 				</Card>
 
 				{/* Main Content */}
-				<Card style={{ flex: 1, minHeight: 500, padding: '2.5rem 3rem', overflowY: 'auto' }}>
-					{loading ? (
-						<Text size="3" style={{ color: '#888' }}>Loading…</Text>
-					) : (
-						<div className="docs-content">
-							<ReactMarkdown remarkPlugins={[remarkGfm]}>
-								{content}
-							</ReactMarkdown>
-						</div>
-					)}
+				<Card style={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden' }}>
+					<div style={{ height: '100%', overflowY: 'auto', padding: '2.5rem 3rem', boxSizing: 'border-box' }}>
+						{loading ? (
+							<Text size="3" style={{ color: '#888' }}>Loading…</Text>
+						) : (
+							<div className="docs-content">
+								<ReactMarkdown remarkPlugins={[remarkGfm]}>
+									{content}
+								</ReactMarkdown>
+							</div>
+						)}
+					</div>
 				</Card>
 			</Flex>
 		</Flex>
