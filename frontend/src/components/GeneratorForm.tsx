@@ -14,6 +14,7 @@ const addonOptions: Record<AddonCategory, { value: string; label: string }[]> = 
   ],
   other: [
     { value: 'zap', label: 'Zap' },
+    { value: 'logrus', label: 'Logrus' },
     { value: 'cobra', label: 'Cobra' },
   ],
 };

@@ -79,6 +79,12 @@ func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.B
 		}
 	}
 
+	// Makefile
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName)); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
 	// .gitignore
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
 		log.Printf("[ERROR] %v", err)
