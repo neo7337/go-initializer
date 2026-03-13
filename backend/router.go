@@ -12,14 +12,15 @@ import (
 func NewRouter(v *validator.Validate) *gin.Engine {
 	service := gin.Default()
 
-	// Configure CORS with more permissive settings for development
+	// Configure CORS. AllowCredentials must not be used with a wildcard origin
+	// (browsers will reject the response). Since this API serves file downloads
+	// with no cookies or auth headers, credentials are not needed.
 	service.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Common React dev server ports
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "X-User-ID"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "X-User-ID"},
+		ExposeHeaders: []string{"Content-Length"},
+		MaxAge:        12 * time.Hour,
 	}))
 
 	service.GET("/healthz", func(ctx *gin.Context) {

@@ -1,92 +1,170 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Card, Button, Flex, Heading, Text } from '@radix-ui/themes';
+import docsConfig, { DocPage } from '../docsConfig';
 
-const blogPosts = [
-	{
-		id: 1,
-		title: 'Getting Started with Go Initializer',
-		content: `Go Initializer helps you scaffold Go projects with best practices and modern frameworks. Select your project type, Go version, and framework to generate a ready-to-use starter kit.`,
-	},
-	{
-		id: 2,
-		title: 'Microservices Best Practices',
-		content: `Learn how to structure your Go microservices for scalability and maintainability. Explore recommended folder structures, dependency management, and testing strategies.`,
-	},
-	{
-		id: 3,
-		title: 'Choosing a Go Web Framework',
-		content: `Compare popular Go web frameworks like Gin, Echo, and Fiber. Understand their strengths, community support, and when to use each for your project.`,
-	},
-	{
-		id: 4,
-		title: 'Community Resources',
-		content: `Find curated links to Go tutorials, open-source projects, and community forums to accelerate your learning and development.`,
-	},
-];
+const allPages: DocPage[] = docsConfig.flatMap((g) => g.pages);
 
 const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-	const [selectedId, setSelectedId] = useState(blogPosts[0].id);
-	const selectedPost = blogPosts.find((post) => post.id === selectedId);
+	const [selectedId, setSelectedId] = useState(allPages[0].id);
+	const [content, setContent] = useState('');
+	const [loading, setLoading] = useState(true);
+	const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+	const toggleGroup = (group: string) =>
+		setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
+
+	const selectedPage = allPages.find((p) => p.id === selectedId)!;
+
+	useEffect(() => {
+		setLoading(true);
+		setContent('');
+		fetch(selectedPage.file)
+			.then((res) => {
+				if (!res.ok) throw new Error(`Failed to load ${selectedPage.file}`);
+				return res.text();
+			})
+			.then((text) => {
+				setContent(text);
+				setLoading(false);
+			})
+			.catch(() => {
+				setContent('_Could not load page content._');
+				setLoading(false);
+			});
+	}, [selectedPage.file]);
 
 	return (
-		<Flex direction="column" width="100%" style={{ padding: '2rem 0' }}>
-			<Flex style={{ maxWidth: 1200, width: '100%', margin: '0 auto', gap: 32 }}>
-				{/* Sidebar: Titles */}
-				<Card style={{ width: 300, minWidth: 220, padding: '2rem 0', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 0 }}>
-					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 2rem' }}>Explore</Heading>
-					<ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-						{blogPosts.map((post, idx) => (
-							<li key={post.id} style={{ margin: 0, padding: 0 }}>
-								<Button
-									variant={selectedId === post.id ? 'solid' : 'ghost'}
-									color={selectedId === post.id ? 'gold' : 'gray'}
-									onClick={() => setSelectedId(post.id)}
-									size="3"
-									radius="large"
+		<Flex direction="column" width="100%" style={{ padding: '2rem', height: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+			<Flex style={{ width: '100%', gap: 32, alignItems: 'stretch', flex: 1, overflow: 'hidden' }}>
+				{/* Sidebar */}
+				<Card style={{ width: 280, minWidth: 220, padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: 0, overflowY: 'auto', flexShrink: 0 }}>
+					<Heading size="5" weight="bold" style={{ margin: '0 0 1.5rem 1.5rem' }}>Explore</Heading>
+					{docsConfig.map((group) => (
+						<div key={group.group} style={{ marginBottom: '0.25rem' }}>
+							{/* Folder row */}
+							<button
+								onClick={() => toggleGroup(group.group)}
+								style={{
+									all: 'unset',
+									cursor: 'pointer',
+									display: 'flex',
+									alignItems: 'center',
+									gap: 6,
+									width: '100%',
+									boxSizing: 'border-box',
+									padding: '0.4rem 1rem',
+									borderRadius: 4,
+									transition: 'background 0.15s',
+								}}
+								onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+								onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+							>
+								<span style={{ fontSize: 11, color: '#888', width: 12, flexShrink: 0 }}>
+									{collapsedGroups[group.group] ? '▶' : '▼'}
+								</span>
+								<span style={{ fontSize: 13, color: '#ffd700' }}>📁</span>
+								<Text
+									size="1"
+									weight="bold"
 									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 16,
-										justifyContent: 'flex-start',
-										fontWeight: selectedId === post.id ? 700 : 500,
-										fontSize: 18,
-										borderLeft: selectedId === post.id ? '4px solid #ffd700' : '4px solid transparent',
-										borderRadius: 12,
-										padding: '0.9rem 2rem 0.9rem 2.2rem',
-										background: selectedId === post.id ? '#fffbe6' : undefined,
-										color: selectedId === post.id ? '#bfa100' : undefined,
-										textAlign: 'left',
-										boxShadow: selectedId === post.id ? '0 2px 8px 0 #ffd70022' : undefined,
-										transition: 'background 0.18s, color 0.18s, box-shadow 0.18s',
-										outline: selectedId === post.id ? '2px solid #ffd700' : undefined,
+										textTransform: 'uppercase',
+										letterSpacing: '0.08em',
+										color: '#aaa',
 									}}
-									aria-current={selectedId === post.id ? 'true' : undefined}
-									tabIndex={0}
 								>
-									<span style={{ fontSize: 20, opacity: selectedId === post.id ? 1 : 0.5, transition: 'opacity 0.2s', marginRight: 4 }}>
-										{selectedId === post.id ? '★' : '•'}
-									</span>
-									<span style={{ whiteSpace: 'pre-line' }}>{post.title}</span>
-								</Button>
-							</li>
-						))}
-					</ul>
-				</Card>
-				{/* Main Content: Selected Post */}
-				<Card style={{ flex: 1, minHeight: 400, padding: '2.5rem 2.5rem 2.5rem 4.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', position: 'relative' }}>
-					<Heading size="7" weight="bold" style={{ marginBottom: 8, marginTop: 0 }}>{selectedPost?.title}</Heading>
-					<Text size="5" style={{ lineHeight: 1.7 }}>{selectedPost?.content}</Text>
-					<Flex style={{ marginTop: 'auto', textAlign: 'center', justifyContent: 'center' }}>
+									{group.group}
+								</Text>
+							</button>
+
+							{/* File rows */}
+							{!collapsedGroups[group.group] && (
+								<ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+									{group.pages.map((page, idx, arr) => {
+										const active = selectedId === page.id;
+										const isLast = idx === arr.length - 1;
+										return (
+											<li key={page.id} style={{ margin: 0, padding: 0, display: 'flex', alignItems: 'stretch' }}>
+												{/* Tree lines */}
+												<div style={{ width: 36, flexShrink: 0, position: 'relative', marginLeft: 16 }}>
+													{/* Vertical line */}
+													<div style={{
+														position: 'absolute',
+														left: 10,
+														top: 0,
+														bottom: isLast ? '50%' : 0,
+														width: 1,
+														background: '#444',
+													}} />
+													{/* Horizontal line */}
+													<div style={{
+														position: 'absolute',
+														left: 10,
+														top: '50%',
+														width: 14,
+														height: 1,
+														background: '#444',
+													}} />
+												</div>
+												<button
+													onClick={() => setSelectedId(page.id)}
+													style={{
+														all: 'unset',
+														cursor: 'pointer',
+														flex: 1,
+														display: 'flex',
+														alignItems: 'center',
+														gap: 6,
+														padding: '0.4rem 0.75rem 0.4rem 0',
+														fontSize: 13,
+														fontWeight: active ? 700 : 400,
+														color: active ? '#ffd700' : 'inherit',
+														borderLeft: active ? '2px solid #ffd700' : '2px solid transparent',
+														background: active ? 'rgba(255, 215, 0, 0.08)' : 'transparent',
+														borderRadius: '0 4px 4px 0',
+														transition: 'background 0.15s, color 0.15s',
+													}}
+													onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+													onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+													aria-current={active ? 'page' : undefined}
+												>
+													<span style={{ fontSize: 13 }}>📄</span>
+													{page.title}
+												</button>
+											</li>
+										);
+									})}
+								</ul>
+							)}
+						</div>
+					))}
+					<Flex style={{ padding: '1.5rem 1.5rem 0.5rem' }}>
 						<Button
 							onClick={onBack}
 							variant="outline"
 							color="gold"
-							size="3"
-							style={{ fontWeight: 700, fontSize: 17 }}
+							size="2"
+							style={{ width: '100%', fontWeight: 700 }}
 						>
 							← Back to Generator
 						</Button>
 					</Flex>
+				</Card>
+
+				{/* Main Content */}
+				<Card style={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden' }}>
+					<div style={{ height: '100%', overflowY: 'auto', padding: '2.5rem 3rem', boxSizing: 'border-box' }}>
+						{loading ? (
+							<Text size="3" style={{ color: '#888' }}>Loading…</Text>
+						) : (
+							<div className="docs-content">
+								<ReactMarkdown remarkPlugins={[remarkGfm]}>
+									{content}
+								</ReactMarkdown>
+							</div>
+						)}
+					</div>
 				</Card>
 			</Flex>
 		</Flex>

@@ -9,9 +9,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func Start() {
-	validate := validator.New()
+// validate is the shared request validator used by handlers.
+var validate = validator.New()
 
+func Start() {
 	routes := NewRouter(validate)
 
 	server := &http.Server{
