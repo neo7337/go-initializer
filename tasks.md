@@ -56,7 +56,7 @@ The backend receives form input (project type, Go version, framework, addons, do
 ## Phase 2 — Framework-Aware Code Generation (Core Engine)
 > Medium complexity. The shared generation utilities must understand framework context before any specific generator can be completed.
 
-- [ ] **T7 — [Backend] Make `GenerateMainContent` framework-aware** — add a `framework string` parameter; return different `main.go` bodies per framework:
+- [x] **T7 — [Backend] Make `GenerateMainContent` framework-aware** — add a `framework string` parameter; return different `main.go` bodies per framework:
   - **golly** — existing `l3.Get()` + logger pattern
   - **gin** — `gin.Default()`, sample route, `router.Run(":8080")`
   - **echo** — `echo.New()`, sample route, `e.Start(":8080")`
@@ -64,10 +64,10 @@ The backend receives form input (project type, Go version, framework, addons, do
   - **chi** — `chi.NewRouter()`, sample route, `http.ListenAndServe(":8080", r)`
   - **cobra** — `rootCmd.Execute()` entrypoint
   - **gokit** — minimal transport/endpoint/service entrypoint
-- [ ] **T8 — [Backend] Add `GenerateHandlerContent(framework string) []byte` helper** — produces a framework-specific `handler.go` with a sample health-check or hello handler; used by microservice and api-server generators
-- [ ] **T9 — [Backend] Add `GenerateRouterContent(framework string) []byte` helper** — produces a framework-specific `router.go` that wires routes to handlers; used by microservice and api-server generators
-- [ ] **T10 — [Backend] Add `GenerateServiceContent(name string) []byte` helper** — produces a simple `service.go` (package `internal`) with a stub interface and implementation; used by all generators
-- [ ] **T11 — [Backend] Add `GenerateLoggingAddon(addons []string) ([]byte, error)` helper** — produces an `internal/logger/logger.go` file for `zap` or `logrus` with an initialised logger instance; fixes the currently ignored "other" addons
+- [x] **T8 — [Backend] Add `GenerateHandlerContent(framework string) []byte` helper** — produces a framework-specific `handler.go` with a sample health-check or hello handler; used by microservice and api-server generators
+- [x] **T9 — [Backend] Add `GenerateRouterContent(framework string) []byte` helper** — produces a framework-specific `router.go` that wires routes to handlers; used by microservice and api-server generators
+- [x] **T10 — [Backend] Add `GenerateServiceContent(name string) []byte` helper** — produces a simple `service.go` (package `internal`) with a stub interface and implementation; used by all generators
+- [x] **T11 — [Backend] Add `GenerateLoggingAddon(addons []string) ([]byte, error)` helper** — produces an `internal/logger/logger.go` file for `zap` or `logrus` with an initialised logger instance; fixes the currently ignored "other" addons
 
 ---
 
@@ -180,8 +180,8 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 
 | Phase | Tasks | Complexity | Dependency | Status |
 |---|---|---|---|---|
-| 1 — Bug Fixes & Static Files | T1–T6 | Low | None | T1, T2 done; T3–T6 open |
-| 2 — Framework-Aware Engine | T7–T11 | Medium | Phase 1 | Open |
+| 1 — Bug Fixes & Static Files | T1–T6 | Low | None | All done |
+| 2 — Framework-Aware Engine | T7–T11 | Medium | Phase 1 | All done |
 | 3 — Complete `simple-project` | T12–T13 | Medium | Phase 2 | Open |
 | 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | Partial (structure exists, not framework-aware) |
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |

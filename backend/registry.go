@@ -96,6 +96,7 @@ var DependencyMap = map[string][]string{
 	"gin":       {"github.com/gin-gonic/gin v1.11.0"},
 	"echo":      {"github.com/labstack/echo/v4 v4.14.0"},
 	"fiber":     {"github.com/gofiber/fiber/v2 v2.52.10"},
+	"chi":       {"github.com/go-chi/chi/v5 v5.2.1"},
 	"gorm":      {"gorm.io/gorm v1.31.1", "gorm.io/driver/postgres v1.6.0"},
 	"ent":       {"entgo.io/ent/cmd/ent v0.14.5"},
 	"sqlx":      {"github.com/jmoiron/sqlx v1.4.0", "github.com/lib/pq v1.10.9"},
