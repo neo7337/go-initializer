@@ -108,7 +108,7 @@ export async function generateProject(data: GenerateProjectPayload): Promise<Blo
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/generate`, {
+    response = await fetch(`${API_BASE_URL}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
