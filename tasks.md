@@ -48,8 +48,8 @@ The backend receives form input (project type, Go version, framework, addons, do
 - [x] **T2 — [Backend] Fix `GenerateDatabaseAddon`** — replaced undefined `mysql`/`dsn` references; gorm uses `os.Getenv("DATABASE_URL")` + `postgres.Open`; ent uses env var DSN with commented-out scaffold
 - [x] **T3 — [Backend] Add input validation** — add `validate` struct tags to `CreateProjectRequest` fields (`required`, `oneof` for enums); call the validator in `GenerateHandler` before processing; return `400` with field-level error messages on failure
 - [x] **T4 — [Backend] Add `.gitignore` to all generated zips** — a `GenerateGitignore() []byte` helper that returns a standard Go `.gitignore` (binaries, `vendor/`, `.env`, IDE dirs); call it in every generator
-- [ ] **T5 — [Backend] Add `Makefile` to all generated zips** — a `GenerateMakefile(name string) []byte` helper with targets: `build`, `run`, `tidy` (`go mod tidy`), `test`; call it in every generator
-- [ ] **T6 — [Frontend] Add `logrus` to "other" addons display** — add `{ value: 'logrus', label: 'Logrus' }` to the `other` category in `addonOptions` inside `GeneratorForm.tsx`
+- [x] **T5 — [Backend] Add `Makefile` to all generated zips** — a `GenerateMakefile(name string) []byte` helper with targets: `build`, `run`, `tidy` (`go mod tidy`), `test`; call it in every generator
+- [x] **T6 — [Frontend] Add `logrus` to "other" addons display** — add `{ value: 'logrus', label: 'Logrus' }` to the `other` category in `addonOptions` inside `GeneratorForm.tsx`
 
 ---
 

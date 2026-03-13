@@ -77,6 +77,12 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 		return nil, err
 	}
 
+	// Makefile
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName)); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
 	// .gitignore
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
 		log.Printf("[ERROR] %v", err)

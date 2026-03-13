@@ -314,3 +314,23 @@ vendor/
 Thumbs.db
 `)
 }
+
+// GenerateMakefile returns a standard Makefile for a Go project.
+func GenerateMakefile(name string) []byte {
+	return []byte(`BINARY_NAME=` + name + `
+
+.PHONY: build run tidy test
+
+build:
+	go build -o bin/$(BINARY_NAME) ./...
+
+run:
+	go run ./...
+
+tidy:
+	go mod tidy
+
+test:
+	go test ./...
+`)
+}
