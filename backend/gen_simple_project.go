@@ -47,7 +47,7 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 	}
 
 	// cmd/<name>/main.go
-	mainGoContent, err := GenerateMainContent()
+	mainGoContent, err := GenerateMainContent(request.Framework)
 	if err != nil {
 		log.Printf("[ERROR] Failed to generate main.go: %v", err)
 		return nil, fmt.Errorf("failed to generate main.go: %w", err)
@@ -78,7 +78,7 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 	}
 
 	// Makefile
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName, fmt.Sprintf("./cmd/%s", folderName))); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}

@@ -80,7 +80,7 @@ func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.B
 	}
 
 	// Makefile
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName, fmt.Sprintf("./cmd/%s", folderName))); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}
