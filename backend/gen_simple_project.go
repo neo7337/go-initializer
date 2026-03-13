@@ -77,6 +77,12 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 		return nil, err
 	}
 
+	// .gitignore
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
 	// Dockerfile (optional)
 	if request.DockerSupport {
 		if err := addToZip(zipWriter, fmt.Sprintf("%s/Dockerfile", folderName), GenerateDockerfile(request)); err != nil {

@@ -273,3 +273,44 @@ CMD ["./main"]
 	`
 	return []byte(dockerfileContent)
 }
+
+// GenerateGitignore returns a standard Go .gitignore file.
+func GenerateGitignore() []byte {
+	return []byte(`# Binaries and compiled output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of go build
+/bin/
+/dist/
+/out/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Vendor directory
+vendor/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE / editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+`)
+}
