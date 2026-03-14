@@ -152,10 +152,10 @@ Project layout to generate:
 
 Supported frameworks: `cobra`, `urfave`, `kingpin`
 
-- [ ] **T17 — [Backend] Add `GenerateRootCmd(framework, name string) []byte` helper** — returns `cmd/root.go` tailored to cobra / urfave / kingpin
-- [ ] **T18 — [Backend] Add `GenerateSubCmd(framework, name string) []byte` helper** — returns `cmd/<name>.go` with a sample sub-command for the chosen framework
-- [ ] **T19 — [Backend] Create `gen_cli_app.go`** — produce the full layout above using T17/T18 helpers and Phase 2 helpers; support all three CLI frameworks and logging addons
-- [ ] **T20 — [Backend] Register `cli-app` in `generatorRegistry`** — add `"cli-app": &CLIAppGenerator{}` to `registry.go`; no changes to `handler.go` required
+- [x] **T17 — [Backend] Add `GenerateRootCmd(framework, name string) []byte` helper** — returns `cmd/root.go` tailored to cobra / urfave / kingpin
+- [x] **T18 — [Backend] Add `GenerateSubCmd(framework, name string) []byte` helper** — returns `cmd/<name>.go` with a sample sub-command for the chosen framework
+- [x] **T19 — [Backend] Create `gen_cli_app.go`** — produce the full layout above using T17/T18 helpers and Phase 2 helpers; support all three CLI frameworks and logging addons
+- [x] **T20 — [Backend] Register `cli-app` in `generatorRegistry`** — add `"cli-app": &CLIAppGenerator{}` to `registry.go`; no changes to `handler.go` required
 
 ---
 
@@ -185,6 +185,6 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 | 3 — Complete `simple-project` | T12–T13 | Medium | Phase 2 | All done |
 | 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | All done |
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |
-| 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | Open |
+| 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | All done |
 | 7 — Frontend Dynamic UI | T21–T23 | Low-Medium | Phase 1 | Open |
 | 8 — Infrastructure | T24–T25 | Low | Any | Open |
