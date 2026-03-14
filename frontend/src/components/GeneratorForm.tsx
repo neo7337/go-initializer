@@ -1,23 +1,7 @@
 import React from 'react';
-import { Card, Button, Text, Flex, Heading, RadioGroup, Checkbox } from '@radix-ui/themes';
+import { Card, Button, Text, Flex, Heading, RadioGroup, Checkbox, Callout } from '@radix-ui/themes';
 import { useGeneratorForm } from '../hooks/useGeneratorForm';
 import type { AddonCategory } from '../types';
-
-const addonOptions: Record<AddonCategory, { value: string; label: string }[]> = {
-  cache: [
-    { value: 'redis', label: 'Redis' },
-    { value: 'memcached', label: 'Memcached' },
-  ],
-  database: [
-    { value: 'gorm', label: 'Gorm' },
-    { value: 'ent', label: 'Ent' },
-  ],
-  other: [
-    { value: 'zap', label: 'Zap' },
-    { value: 'logrus', label: 'Logrus' },
-    { value: 'cobra', label: 'Cobra' },
-  ],
-};
 
 const inputStyle = (hasError: boolean): React.CSSProperties => ({
   width: '100%',
@@ -47,6 +31,9 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
     goVersionOptions,
     supportedProjectTypes,
     currentFrameworkOptions,
+    addonOptions,
+    generateError, setGenerateError,
+    generateSuccess, setGenerateSuccess,
     isMac,
     handleGenerate,
   } = useGeneratorForm();
@@ -134,17 +121,17 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       <Card style={{ marginBottom: 0 }}>
         <Heading size="4" mb="3">Addons</Heading>
         <Flex direction="row" gap="6" wrap="wrap">
-          {(['cache', 'database', 'other'] as AddonCategory[]).map(category => (
+          {Object.entries(addonOptions).map(([category, opts]) => (
             <div key={category} style={{ minWidth: 180 }}>
               <Text as="div" size="3" weight="bold" mb="2" style={{ textTransform: 'capitalize' }}>
                 {category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1)}
               </Text>
               <Flex gap="4" direction="column">
-                {addonOptions[category].map(opt => (
+                {opts.map(opt => (
                   <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                     <Checkbox
-                      checked={selectedAddons[category].includes(opt.value)}
-                      onCheckedChange={() => handleAddonChange(category, opt.value)}
+                      checked={selectedAddons[category]?.includes(opt.value) ?? false}
+                      onCheckedChange={() => handleAddonChange(category as AddonCategory, opt.value)}
                     />
                     <Text as="span" size="2">{opt.label}</Text>
                   </label>
@@ -264,6 +251,44 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
           EXPLORE
         </Button>
       </Flex>
+
+      {/* Inline error banner (T22) */}
+      {generateError && (
+        <Callout.Root color="red" role="alert">
+          <Callout.Text>
+            <strong>Error: </strong>{generateError}
+          </Callout.Text>
+          <Button
+            size="1"
+            variant="ghost"
+            color="red"
+            style={{ marginLeft: 'auto' }}
+            onClick={() => setGenerateError(null)}
+            aria-label="Dismiss error"
+          >
+            ✕
+          </Button>
+        </Callout.Root>
+      )}
+
+      {/* Success banner (T23) */}
+      {generateSuccess && (
+        <Callout.Root color="green" role="status">
+          <Callout.Text>
+            <strong>Success! </strong>Your project zip has been downloaded.
+          </Callout.Text>
+          <Button
+            size="1"
+            variant="ghost"
+            color="green"
+            style={{ marginLeft: 'auto' }}
+            onClick={() => setGenerateSuccess(false)}
+            aria-label="Dismiss success"
+          >
+            ✕
+          </Button>
+        </Callout.Root>
+      )}
     </div>
   );
 };

@@ -20,6 +20,7 @@ type AddonGenerator interface {
 var generatorRegistry = map[string]Generator{
 	"simple-project": &SimpleProjectGenerator{},
 	"microservice":   &MicroserviceGenerator{},
+	"cli-app":        &CLIAppGenerator{},
 }
 
 // addonRegistry maps addon category names to their AddonGenerator implementations.
@@ -105,6 +106,8 @@ var DependencyMap = map[string][]string{
 	"zerolog":   {"github.com/rs/zerolog v1.34.0"},
 	"viper":     {"github.com/spf13/viper v1.21.0"},
 	"cobra":     {"github.com/spf13/cobra v1.10.2", "github.com/spf13/pflag v1.0.10"},
+	"urfave":    {"github.com/urfave/cli/v2 v2.27.6"},
+	"kingpin":   {"gopkg.in/alecthomas/kingpin.v2 v2.2.6"},
 	"testify":   {"github.com/stretchr/testify v1.11.1"},
 	"httptest":  {"net/http/httptest"},
 	"redis":     {"github.com/redis/go-redis/v9 v9.17.2"},
