@@ -57,11 +57,26 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 		return nil, err
 	}
 
-	// Addons — delegated to the addon registry; new addon types need only a
-	// registration entry in registry.go, no changes here.
+	// Addons — cache/database delegated to the addon registry; "other" (logging)
+	// is handled inline via GenerateLoggingAddon.
 	for addonType, addons := range request.Addons {
+		if len(addons) == 0 {
+			continue
+		}
+		if addonType == "other" {
+			loggerContent, err := GenerateLoggingAddon(addons)
+			if err != nil {
+				log.Printf("[WARN] Skipping logging addon: %v", err)
+				continue
+			}
+			if err := addToZip(zipWriter, fmt.Sprintf("%s/internal/logger/logger.go", folderName), loggerContent); err != nil {
+				log.Printf("[ERROR] %v", err)
+				return nil, err
+			}
+			continue
+		}
 		gen, ok := addonRegistry[addonType]
-		if !ok || len(addons) == 0 {
+		if !ok {
 			continue
 		}
 		if err := gen.Generate(folderName, addons, zipWriter); err != nil {
@@ -71,8 +86,7 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 	}
 
 	// internal/service.go
-	serviceContent := "package internal\n\n// Business logic goes here\nfunc Service() string {\n\treturn \"Service logic\"\n}\n"
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/internal/service.go", folderName), []byte(serviceContent)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/internal/service.go", folderName), GenerateServiceContent(folderName)); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}

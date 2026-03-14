@@ -74,8 +74,8 @@ The backend receives form input (project type, Go version, framework, addons, do
 ## Phase 3 — Complete `simple-project` Generator
 > Medium complexity. Builds directly on Phase 2 helpers; simplest project type.
 
-- [ ] **T12 — [Backend] Update `gen_simple_project.go` to use framework-aware `GenerateMainContent`** — pass `request.Framework` to `GenerateMainContent`; the only supported framework for simple-project is `golly` today but the call should be generic
-- [ ] **T13 — [Backend] Add logging addon support to `gen_simple_project.go`** — handle `addonType == "other"` in the addon loop; call `GenerateLoggingAddon` and write the result to `internal/logger/logger.go` in the zip
+- [x] **T12 — [Backend] Update `gen_simple_project.go` to use framework-aware `GenerateMainContent`** — pass `request.Framework` to `GenerateMainContent`; the only supported framework for simple-project is `golly` today but the call should be generic
+- [x] **T13 — [Backend] Add logging addon support to `gen_simple_project.go`** — handle `addonType == "other"` in the addon loop; call `GenerateLoggingAddon` and write the result to `internal/logger/logger.go` in the zip
 
 ---
 
@@ -182,7 +182,7 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 |---|---|---|---|---|
 | 1 — Bug Fixes & Static Files | T1–T6 | Low | None | All done |
 | 2 — Framework-Aware Engine | T7–T11 | Medium | Phase 1 | All done |
-| 3 — Complete `simple-project` | T12–T13 | Medium | Phase 2 | Open |
+| 3 — Complete `simple-project` | T12–T13 | Medium | Phase 2 | All done |
 | 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | Partial (structure exists, not framework-aware) |
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |
 | 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | Open |
