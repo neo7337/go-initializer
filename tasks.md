@@ -100,7 +100,7 @@ Project layout to generate:
 └── Dockerfile                # if dockerSupport is true
 ```
 
-- [ ] **T14 — [Backend] Complete `GenerateMicroservice`** — the generator structure exists; wire Phase 2 helpers to make `cmd/main.go` framework-aware; add `internal/router.go` from `GenerateRouterContent`; replace the current hardcoded `internal/handler/handler.go` with `GenerateHandlerContent`; replace the current `internal/service/service.go` stub with `GenerateServiceContent`; handle "other" logging addons; emit `.gitignore` and `Makefile`
+- [x] **T14 — [Backend] Complete `GenerateMicroservice`** — the generator structure exists; wire Phase 2 helpers to make `cmd/main.go` framework-aware; add `internal/router.go` from `GenerateRouterContent`; replace the current hardcoded `internal/handler/handler.go` with `GenerateHandlerContent`; replace the current `internal/service/service.go` stub with `GenerateServiceContent`; handle "other" logging addons; emit `.gitignore` and `Makefile`
 
 ---
 
@@ -183,7 +183,7 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 | 1 — Bug Fixes & Static Files | T1–T6 | Low | None | All done |
 | 2 — Framework-Aware Engine | T7–T11 | Medium | Phase 1 | All done |
 | 3 — Complete `simple-project` | T12–T13 | Medium | Phase 2 | All done |
-| 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | Partial (structure exists, not framework-aware) |
+| 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | All done |
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |
 | 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | Open |
 | 7 — Frontend Dynamic UI | T21–T23 | Low-Medium | Phase 1 | Open |
