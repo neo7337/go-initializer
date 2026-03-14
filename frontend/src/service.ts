@@ -108,7 +108,7 @@ export async function generateProject(data: GenerateProjectPayload): Promise<Blo
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/generate`, {
+    response = await fetch(`${API_BASE_URL}/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -140,5 +140,5 @@ export interface MetaData {
 
 /** Fetches supported project metadata from the API. */
 export async function getMetaData(): Promise<MetaData> {
-  return get<MetaData>('/api/meta');
+  return get<MetaData>('/meta');
 }
