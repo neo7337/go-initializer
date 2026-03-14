@@ -162,9 +162,9 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 ## Phase 7 — Frontend Dynamic Addon UI & Polish
 > Low-medium complexity. Frontend-only; depends on backend being stable.
 
-- [ ] **T21 — [Frontend] Drive addon UI from API metadata** — in `useGeneratorForm.ts`, derive addon options from the `supportedAddons` map returned by `getMetaData()`; expose them from the hook; remove the hardcoded `addonOptions` map in `GeneratorForm.tsx`
-- [ ] **T22 — [Frontend] Inline error display** — replace `alert(error.message)` in `useGeneratorForm.ts` with a state variable `generateError`; render an inline error banner in `GeneratorForm.tsx` below the generate button
-- [ ] **T23 — [Frontend] Post-generate success banner** — on successful blob download, set a `generateSuccess` state; render a dismissible success message in `GeneratorForm.tsx`
+- [x] **T21 — [Frontend] Drive addon UI from API metadata** — in `useGeneratorForm.ts`, derive addon options from the `supportedAddons` map returned by `getMetaData()`; expose them from the hook; remove the hardcoded `addonOptions` map in `GeneratorForm.tsx`
+- [x] **T22 — [Frontend] Inline error display** — replace `alert(error.message)` in `useGeneratorForm.ts` with a state variable `generateError`; render an inline error banner in `GeneratorForm.tsx` below the generate button
+- [x] **T23 — [Frontend] Post-generate success banner** — on successful blob download, set a `generateSuccess` state; render a dismissible success message in `GeneratorForm.tsx`
 
 ---
 
@@ -186,5 +186,5 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 | 4 — Complete `microservice` | T14 | Medium-High | Phase 2 | All done |
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |
 | 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | All done |
-| 7 — Frontend Dynamic UI | T21–T23 | Low-Medium | Phase 1 | Open |
+| 7 — Frontend Dynamic UI | T21–T23 | Low-Medium | Phase 1 | All done |
 | 8 — Infrastructure | T24–T25 | Low | Any | Open |

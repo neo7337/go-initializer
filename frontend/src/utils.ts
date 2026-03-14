@@ -48,9 +48,7 @@ export function toSupportedProjectTypes(projectTypes: Record<string, string>): {
 }
 
 export function toSupportedAddons(supportedAddons: Record<string, Record<string, boolean>>): Record<string, string[]> {
-    const labelMap: Record<string, string> = {
-
-    }
+    const labelMap: Record<string, string> = {}
     const result: Record<string, string[]> = {};
     Object.entries(supportedAddons).forEach(([category, addons]) => {
         const arr = Object.keys(addons)
@@ -59,4 +57,26 @@ export function toSupportedAddons(supportedAddons: Record<string, Record<string,
         result[category] = arr;
     });
     return result;
+}
+
+/** Converts supportedAddons map from the API into labelled option pairs for the UI. */
+export function toAddonOptions(
+  supportedAddons: Record<string, Record<string, boolean>>,
+): Record<string, { value: string; label: string }[]> {
+  const labelMap: Record<string, string> = {
+    redis: 'Redis',
+    memcached: 'Memcached',
+    gorm: 'Gorm',
+    ent: 'Ent',
+    zap: 'Zap',
+    logrus: 'Logrus',
+    cobra: 'Cobra',
+  };
+  const result: Record<string, { value: string; label: string }[]> = {};
+  Object.entries(supportedAddons).forEach(([category, addons]) => {
+    result[category] = Object.keys(addons)
+      .filter(a => addons[a])
+      .map(a => ({ value: a, label: labelMap[a] || a }));
+  });
+  return result;
 }

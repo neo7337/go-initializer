@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { generateProject, getMetaData } from '../service';
-import { toGoVersionOptions, toSupportedFrameworkOptionsMap, toSupportedProjectTypes } from '../utils';
+import { toGoVersionOptions, toSupportedFrameworkOptionsMap, toSupportedProjectTypes, toAddonOptions } from '../utils';
 import type { AddonCategory, AddonState, FormErrors, FormTouched } from '../types';
 
 const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac');
@@ -30,6 +30,9 @@ export function useGeneratorForm() {
   const [goVersionOptions, setGoVersionOptions] = useState<{ version: string; label: string }[]>([]);
   const [supportedProjectTypes, setSupportedProjectTypes] = useState<{ type: string; label: string }[]>([]);
   const [supportedFrameworkOptions, setSupportedFrameworkOptions] = useState<Record<string, { label: string; value: string }[]>>({});
+  const [addonOptions, setAddonOptions] = useState<Record<string, { value: string; label: string }[]>>({});
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [generateSuccess, setGenerateSuccess] = useState(false);
 
   const currentFrameworkOptions = useMemo(
     () => supportedFrameworkOptions[projectType] || [],
@@ -46,6 +49,7 @@ export function useGeneratorForm() {
         setGoVersionOptions(toGoVersionOptions(data.supportedGoVersions || []));
         setSupportedProjectTypes(toSupportedProjectTypes(data.supportedProjectTypes || []));
         setSupportedFrameworkOptions(toSupportedFrameworkOptionsMap(data.supportedFrameworks || []));
+        setAddonOptions(toAddonOptions(data.supportedAddons || {}));
       })
       .catch(error => {
         console.error('Error fetching metadata:', error);
@@ -79,6 +83,8 @@ export function useGeneratorForm() {
 
   const handleGenerate = useCallback(() => {
     if (!validateInput()) return;
+    setGenerateError(null);
+    setGenerateSuccess(false);
     generateProject({ projectType, goVersion, framework, moduleName, name, description, selectedAddons: selectedAddons as Record<string, string[]>, dockerSupport })
       .then(blob => {
         const url = window.URL.createObjectURL(blob);
@@ -89,9 +95,10 @@ export function useGeneratorForm() {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+        setGenerateSuccess(true);
       })
       .catch(error => {
-        alert('Error:\n' + error.message);
+        setGenerateError(error.message);
       });
   }, [validateInput, projectType, goVersion, framework, moduleName, name, description, selectedAddons, dockerSupport]);
 
@@ -124,6 +131,9 @@ export function useGeneratorForm() {
     goVersionOptions,
     supportedProjectTypes,
     currentFrameworkOptions,
+    addonOptions,
+    generateError, setGenerateError,
+    generateSuccess, setGenerateSuccess,
     isMac,
     handleGenerate,
   };
