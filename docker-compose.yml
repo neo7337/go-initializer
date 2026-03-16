@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: cmd/server/Dockerfile
     container_name: go-initializer-backend
     ports:
       - "8181:8181"

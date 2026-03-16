@@ -57,7 +57,8 @@ jobs:
                     frontend:
                         - 'frontend/**'
                     backend:
-                        - 'backend/**'
+                        - 'cmd/server/**'
+                        - 'internal/**'
     
     # Step 2: Build and push Frontend (If only frontend is changed)
     build-frontend:
@@ -106,7 +107,8 @@ jobs:
             - name: Build and push backend
               uses: docker/build-push-action@v5
               with:
-                context: ./backend
+                context: .
+                file: cmd/server/Dockerfile
                 push: true
                 tags: |
                     ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:latest
