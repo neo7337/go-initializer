@@ -333,8 +333,8 @@ goini new \
 - [x] **T31 — [CLI] Implement `goini list` subcommands** — `list types`, `list frameworks --type <t>`, `list addons`; read directly from `internal/generator` registry maps; output as a formatted table
 - [x] **T32 — [CLI] Implement `goini new` flag parsing** — define all flags listed above; collect provided values into a partial `generator.CreateProjectRequest`
 - [x] **T33 — [CLI] Implement interactive prompts for `goini new`** — use `github.com/charmbracelet/huh` to prompt for any field not supplied via flag; filter framework choices by selected project type using `SupportedFrameworksMap`
-- [ ] **T34 — [CLI] Wire `goini new` to the generation engine** — build a complete `generator.CreateProjectRequest` from prompts + flags; call `generator.generatorRegistry[projectType].Generate(request)`; extract the returned zip buffer into the output directory using `archive/zip`
-- [ ] **T35 — [CLI] Add post-generation output** — print success message with absolute output path and contextual next-step hints (`make run` for server types, `make build` for CLI types)
+- [x] **T34 — [CLI] Wire `goini new` to the generation engine** — build a complete `generator.CreateProjectRequest` from prompts + flags; call `generator.generatorRegistry[projectType].Generate(request)`; extract the returned zip buffer into the output directory using `archive/zip`
+- [x] **T35 — [CLI] Add post-generation output** — print success message with absolute output path and contextual next-step hints (`make run` for server types, `make build` for CLI types)
 
 ---
 

@@ -1,8 +1,13 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -89,17 +94,150 @@ func runNew(cmd *cobra.Command, opts *newOpts) error {
 		DockerSupport: opts.docker,
 	}
 
-	// TODO T34: call generator, extract zip into output directory.
-	// TODO T35: print success banner with next-step hints.
-	_ = req
-	_ = opts.output
-	fmt.Println("(prompts complete — generation wired in T34)")
+	// Look up and run the generator for the chosen project type.
+	gen, ok := generator.GeneratorRegistry[req.ProjectType]
+	if !ok {
+		return fmt.Errorf("unknown project type %q; run 'goini list types' to see valid values", req.ProjectType)
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "Generating %s project…\n", req.ProjectType)
+
+	zipBuf, err := gen.Generate(req)
+	if err != nil {
+		return fmt.Errorf("generation failed: %w", err)
+	}
+
+	// Resolve the absolute output path.
+	outDir, err := filepath.Abs(opts.output)
+	if err != nil {
+		return fmt.Errorf("resolving output path: %w", err)
+	}
+
+	// Extract the zip (whose entries are rooted at <name>/) into outDir,
+	// stripping the leading <name>/ prefix so files land directly in outDir.
+	if err := extractZip(zipBuf, outDir); err != nil {
+		return fmt.Errorf("extracting project: %w", err)
+	}
+
+	printSuccess(cmd, req.Name, req.ProjectType, outDir)
 	return nil
+}
+
+// printSuccess prints the success banner and contextual next-step hints.
+// The make target differs by project type: cli-app projects build a binary,
+// all other types run the service directly.
+func printSuccess(cmd *cobra.Command, name, projectType, outDir string) {
+	w := cmd.OutOrStdout()
+	fmt.Fprintf(w, "\nProject created at %s\n", outDir)
+	fmt.Fprintln(w, "\nNext steps:")
+	fmt.Fprintf(w, "  cd %s\n", name)
+	fmt.Fprintln(w, "  go mod tidy")
+	if projectType == "cli-app" {
+		fmt.Fprintln(w, "  make build")
+	} else {
+		fmt.Fprintln(w, "  make run")
+	}
+}
+
+// extractZip extracts all entries from buf into outDir, stripping the first
+// path component of each zip entry (the generator always nests files under a
+// top-level <name>/ folder).
+//
+// Guard against zip-slip: any entry resolving outside outDir is rejected.
+func extractZip(buf *bytes.Buffer, outDir string) error {
+	r, err := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
+	if err != nil {
+		return fmt.Errorf("read zip: %w", err)
+	}
+
+	// Ensure the output directory exists.
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return fmt.Errorf("create output directory: %w", err)
+	}
+
+	cleanOut := filepath.Clean(outDir)
+
+	for _, f := range r.File {
+		// Strip the leading path component (e.g. "myapp/cmd/main.go" → "cmd/main.go").
+		stripped := stripFirstComponent(f.Name)
+		if stripped == "" {
+			// The entry IS the top-level directory itself; skip it.
+			continue
+		}
+
+		// Resolve destination and guard against zip-slip.
+		dest := filepath.Join(cleanOut, filepath.FromSlash(stripped))
+		if !strings.HasPrefix(filepath.Clean(dest)+string(os.PathSeparator), cleanOut+string(os.PathSeparator)) {
+			return fmt.Errorf("zip entry %q would escape output directory", f.Name)
+		}
+
+		if f.FileInfo().IsDir() {
+			if err := os.MkdirAll(dest, f.Mode()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
+			return err
+		}
+
+		if err := writeZipEntry(f, dest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// writeZipEntry writes a single zip file entry to dest on disk.
+func writeZipEntry(f *zip.File, dest string) error {
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+
+	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, rc)
+	return err
+}
+
+// stripFirstComponent removes the first path segment from a forward-slash
+// separated path (e.g. "myapp/cmd/main.go" → "cmd/main.go").
+func stripFirstComponent(path string) string {
+	idx := strings.Index(path, "/")
+	if idx < 0 {
+		return ""
+	}
+	return path[idx+1:]
+}
+
+// stdinIsTerminal reports whether os.Stdin is an interactive terminal.
+// When false (e.g. in CI or when stdin is redirected) optional prompts are
+// skipped and their zero-value defaults are used instead.
+func stdinIsTerminal() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.Mode()&os.ModeCharDevice != 0
 }
 
 // promptMissing prompts interactively for any field in opts that was not
 // already supplied via a flag. Framework options are filtered by the selected
 // project type using SupportedFrameworksMap.
+//
+// Required fields (name, module, goVersion, projectType, framework) always
+// trigger a prompt when missing; the command fails in non-TTY environments if
+// these are not supplied via flags.
+//
+// Optional fields (description, addons, docker, output) only prompt when stdin
+// is a TTY; in non-TTY environments they default silently to their zero values.
 //
 // The prompts are split into two groups so that the project type is known
 // before the framework select is rendered:
@@ -107,6 +245,7 @@ func runNew(cmd *cobra.Command, opts *newOpts) error {
 //	Group 1 — name, module, description, Go version, project type
 //	Group 2 — framework (filtered), cache/database/other addons, docker, output
 func promptMissing(cmd *cobra.Command, opts *newOpts) error {
+	isTTY := stdinIsTerminal()
 	// ── Group 1: basic metadata + project type ────────────────────────────────
 	var group1 []huh.Field
 
@@ -135,8 +274,9 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 			}))
 	}
 
-	// Description is optional; prompt only when the flag was not explicitly set.
-	if !cmd.Flags().Changed("description") {
+	// Description is optional; prompt only when the flag was not explicitly set
+	// AND stdin is a TTY (non-TTY: default to empty string silently).
+	if !cmd.Flags().Changed("description") && isTTY {
 		group1 = append(group1, huh.NewInput().
 			Title("Description").
 			Description("Optional — press Enter to skip").
@@ -162,10 +302,12 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 	// the correct framework list is shown whether projectType came from a flag
 	// or was chosen in Group 1.
 	var (
-		cacheAddons  []string
-		dbAddons     []string
-		otherAddons  []string
-		promptAddons = !cmd.Flags().Changed("addon")
+		cacheAddons []string
+		dbAddons    []string
+		otherAddons []string
+		// Prompt for addons only when neither --addon flag was set AND stdin is
+		// a TTY; in non-TTY / fully-flagged CI runs default to no addons.
+		promptAddons = !cmd.Flags().Changed("addon") && isTTY
 	)
 	var group2 []huh.Field
 
@@ -199,15 +341,14 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 		}
 	}
 
-	// Docker: --docker defaults to false so it is never "Changed" unless the
-	// user explicitly passed it; always prompt when not set.
-	if !cmd.Flags().Changed("docker") {
+	// Docker: prompt only when not explicitly flagged AND stdin is a TTY.
+	if !cmd.Flags().Changed("docker") && isTTY {
 		group2 = append(group2, huh.NewConfirm().
 			Title("Docker support").
 			Value(&opts.docker))
 	}
 
-	if opts.output == "" {
+	if opts.output == "" && isTTY {
 		group2 = append(group2, huh.NewInput().
 			Title("Output directory").
 			Description("Leave blank to use ./<name>").
