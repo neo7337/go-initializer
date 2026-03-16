@@ -11,6 +11,10 @@ import (
 // validate is the shared request validator used by handlers.
 var validate = validator.New()
 
+// test seams for Start; defaults preserve production behavior.
+var listenAndServe = func(s *http.Server) error { return s.ListenAndServe() }
+var logFatalf = log.Fatalf
+
 func Start() {
 	routes := NewRouter(validate)
 
@@ -23,8 +27,8 @@ func Start() {
 	}
 
 	log.Printf("[INFO] Starting server on %s", server.Addr)
-	err := server.ListenAndServe()
+	err := listenAndServe(server)
 	if err != nil {
-		log.Fatalf("[ERROR] Server failed to start: %v", err)
+		logFatalf("[ERROR] Server failed to start: %v", err)
 	}
 }
