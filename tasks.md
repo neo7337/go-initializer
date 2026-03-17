@@ -434,8 +434,8 @@ On: GitHub Release published
      (separate job, existing behaviour preserved)
 ```
 
-- [ ] **T36 — [Infra] Add `goreleaser.yaml`** — cross-compile `goini` for `darwin/amd64`, `darwin/arm64`, `linux/amd64`, `linux/arm64`; attach binaries to GitHub Releases; include shell completion scripts in archives; configure `brews` block to auto-update the Homebrew formula on each release
-- [ ] **T37 — [Infra] Update `.github/workflows/release.yml`** — run `goreleaser release` on GitHub Release event; preserve the existing Docker Hub publish job for the server image (`cmd/server`)
+- [x] **T36 — [Infra] Add `goreleaser.yaml`** — cross-compile `goini` for `darwin/amd64`, `darwin/arm64`, `linux/amd64`, `linux/arm64`; attach binaries to GitHub Releases; include shell completion scripts in archives; configure `brews` block to auto-update the Homebrew formula on each release
+- [x] **T37 — [Infra] Update `.github/workflows/release.yml`** — run `goreleaser release` on GitHub Release event; preserve the existing Docker Hub publish job for the server image (`cmd/server`)
 - [ ] **T38 — [Infra] Create Homebrew tap** — create `github.com/neo7337/homebrew-goini` repository with `Formula/goini.rb`; formula installs the binary and all three shell completion scripts (bash, zsh, fish)
 - [ ] **T39 — [Docs] Update README** — add `go install` one-liner, `brew install` command, `goini new` quick-start example, and a link to the web UI for users who prefer a graphical interface
 

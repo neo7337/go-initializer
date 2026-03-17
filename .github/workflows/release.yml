@@ -117,8 +117,35 @@ jobs:
             - name: Log out from Docker Hub
               run: docker logout
 
+    # Step 4: Cross-compile goini and publish to GitHub Release + Homebrew tap
+    release-cli:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                go-version-file: go.mod
+                cache: true
+
+            - name: Run goreleaser
+              uses: goreleaser/goreleaser-action@v6
+              with:
+                distribution: goreleaser
+                version: latest
+                args: release --clean
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+
     create-summary:
-        needs: [detect-changes, build-frontend, build-backend]
+        needs: [detect-changes, build-frontend, build-backend, release-cli]
         runs-on: ubuntu-latest
         if: always() # Ensure this runs even if builds are skipped
         steps:
@@ -138,4 +165,10 @@ jobs:
                 echo "| Backend | ✅ Built and Pushed |" >> $GITHUB_STEP_SUMMARY
             else
                 echo "| Backend | ⏩ Skipped (No changes) |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "${{ needs.release-cli.result }}" == "success" ]; then
+                echo "| CLI (goini) | ✅ Released via goreleaser |" >> $GITHUB_STEP_SUMMARY
+            else
+                echo "| CLI (goini) | ❌ goreleaser failed |" >> $GITHUB_STEP_SUMMARY
             fi
