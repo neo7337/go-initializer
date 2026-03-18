@@ -355,9 +355,9 @@ goini new \
 
 ### Phase C — Generator Form
 
-- [ ] **T-UX4 — [Frontend] Form visual redesign** — replace bare `<input>` elements with Radix UI `TextField`; replace radio buttons and checkboxes with styled pill/badge selectors for version and framework choices (larger hit targets, clear selected-state ring); render addon choices as tag-chip multi-select groups; add subtle numbered section labels (`01 Go Version`, `02 Project Type`, …); `GENERATE` button: full-width, prominent, uses `--color-accent` token, shows spinner during generation
+- [x] **T-UX4 — [Frontend] Form visual redesign** — replace bare `<input>` elements with Radix UI `TextField`; replace radio buttons and checkboxes with styled pill/badge selectors for version and framework choices (larger hit targets, clear selected-state ring); render addon choices as tag-chip multi-select groups; add subtle numbered section labels (`01 Go Version`, `02 Project Type`, …); `GENERATE` button: full-width, prominent, uses `--color-accent` token, shows spinner during generation
 
-- [ ] **T-UX5 — [Frontend] Inline validation & feedback states** — redesign the error callout as a terminal-style inline banner with an icon; redesign the success callout with an animated checkmark and auto-dismiss after 5 s with a countdown progress bar; add inline field-level validation: red underline + message below each input (replaces border-colour-only feedback)
+- [x] **T-UX5 — [Frontend] Inline validation & feedback states** — redesign the error callout as a terminal-style inline banner with an icon; redesign the success callout with an animated checkmark and auto-dismiss after 5 s with a countdown progress bar; add inline field-level validation: red underline + message below each input (replaces border-colour-only feedback)
 
 ### Phase D — Explore / Docs Browser
 

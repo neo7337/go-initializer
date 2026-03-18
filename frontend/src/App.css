@@ -333,3 +333,35 @@
   border-top: 1px solid rgba(128, 128, 128, 0.2);
   margin: 2rem 0;
 }
+
+/* ── Spinner animation ────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.form-spinner {
+  animation: spin 0.75s linear infinite;
+}
+
+/* ── Animated checkmark (SVG stroke draw-on) ─────────────────── */
+@keyframes checkmark-draw {
+  from { stroke-dashoffset: 30; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.checkmark-path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: checkmark-draw 0.4s ease-out 0.1s forwards;
+}
+
+/* ── Success countdown progress bar ─────────────────────────── */
+@keyframes success-countdown {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+.success-progress-bar {
+  animation: success-countdown 5s linear forwards;
+}
