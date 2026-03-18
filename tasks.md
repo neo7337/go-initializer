@@ -345,7 +345,7 @@ goini new \
 
 ### Phase A — Foundation
 
-- [ ] **T-UX1 — [Frontend] Migrate CRA → Vite** — install `vite` and `@vitejs/plugin-react`; create `vite.config.ts`; move `public/index.html` to repo root and update the script tag; replace `react-scripts` with `vite`/`vitest` in `package.json`; rename all `REACT_APP_*` env vars to `VITE_*`; update `service.ts` to use `import.meta.env.VITE_API_URL`; update `frontend/Dockerfile` build command and nginx output path from `build/` to `dist/`
+- [x] **T-UX1 — [Frontend] Migrate CRA → Vite** — install `vite` and `@vitejs/plugin-react`; create `vite.config.ts`; move `public/index.html` to repo root and update the script tag; replace `react-scripts` with `vite`/`vitest` in `package.json`; rename all `REACT_APP_*` env vars to `VITE_*`; update `service.ts` to use `import.meta.env.VITE_API_URL`; update `frontend/Dockerfile` build command and nginx output path from `build/` to `dist/`
 
 - [ ] **T-UX2 — [Frontend] Design system token layer** — replace all fragmented CSS variables in `App.css` and hard-coded hex values throughout components with a unified token set: `--color-surface-*` (3 elevation levels), `--color-text-*` (primary / secondary / muted), `--color-border`, `--color-accent` (`#ffd700` formalized), `--color-success`, `--color-destructive`, `--radius-*`, `--shadow-*`; add Geist font via `@fontsource/geist` and apply it to `body`; set dark as the default appearance; remove unused `App-logo` keyframes and dead CSS
 
