@@ -338,7 +338,122 @@ goini new \
 
 ---
 
-## Phase 11 — Distribution & Release
+## Phase 11 — Frontend UI/UX Overhaul
+> Medium-high complexity. Migrate off the unmaintained CRA build tool, establish a unified design system, and redesign every layer of the UI with a terminal/IDE-inspired dark-first aesthetic using the Geist font. All logic (hooks, services, types) is preserved — this phase is styling, structure, and build tooling only.
+
+**Design direction:** Dark-first, terminal/IDE-inspired (Vercel/Railway aesthetic). Accent colour `#ffd700` (gold) formalized as a design token. Geist font via `@fontsource/geist`.
+
+### Phase A — Foundation
+
+- [ ] **T-UX1 — [Frontend] Migrate CRA → Vite** — install `vite` and `@vitejs/plugin-react`; create `vite.config.ts`; move `public/index.html` to repo root and update the script tag; replace `react-scripts` with `vite`/`vitest` in `package.json`; rename all `REACT_APP_*` env vars to `VITE_*`; update `service.ts` to use `import.meta.env.VITE_API_URL`; update `frontend/Dockerfile` build command and nginx output path from `build/` to `dist/`
+
+- [ ] **T-UX2 — [Frontend] Design system token layer** — replace all fragmented CSS variables in `App.css` and hard-coded hex values throughout components with a unified token set: `--color-surface-*` (3 elevation levels), `--color-text-*` (primary / secondary / muted), `--color-border`, `--color-accent` (`#ffd700` formalized), `--color-success`, `--color-destructive`, `--radius-*`, `--shadow-*`; add Geist font via `@fontsource/geist` and apply it to `body`; set dark as the default appearance; remove unused `App-logo` keyframes and dead CSS
+
+### Phase B — Layout & Navigation
+
+- [ ] **T-UX3 — [Frontend] App shell redesign** — replace all inline `React.CSSProperties` in `App.tsx` with Tailwind/CSS classes; new sticky header with backdrop-blur, Geist logo wordmark, theme toggle using SVG icons (not emoji), GitHub icon button with `aria-label`; slim footer (copyright + links only); centred max-width container for main content
+
+### Phase C — Generator Form
+
+- [ ] **T-UX4 — [Frontend] Form visual redesign** — replace bare `<input>` elements with Radix UI `TextField`; replace radio buttons and checkboxes with styled pill/badge selectors for version and framework choices (larger hit targets, clear selected-state ring); render addon choices as tag-chip multi-select groups; add subtle numbered section labels (`01 Go Version`, `02 Project Type`, …); `GENERATE` button: full-width, prominent, uses `--color-accent` token, shows spinner during generation
+
+- [ ] **T-UX5 — [Frontend] Inline validation & feedback states** — redesign the error callout as a terminal-style inline banner with an icon; redesign the success callout with an animated checkmark and auto-dismiss after 5 s with a countdown progress bar; add inline field-level validation: red underline + message below each input (replaces border-colour-only feedback)
+
+### Phase D — Explore / Docs Browser
+
+- [ ] **T-UX6 — [Frontend] Docs browser redesign** — replace the brittle positioned-div sidebar tree with a semantic `<nav>` element; add CSS `max-height` collapse/expand animation; active page: left accent-border + tinted background; replace emoji folder/file icons with inline SVG icons; add a breadcrumb bar at the top of the content pane; add syntax highlighting to fenced code blocks via `react-syntax-highlighter` + Prism; replace the "Loading…" text with a skeleton loader; add a copy-to-clipboard button on every code block
+
+### Phase E — Polish & Quality
+
+- [ ] **T-UX7 — [Frontend] Responsive design** — add breakpoints for mobile (`< 768 px`) and tablet (`768–1024 px`): stack form sections vertically on mobile; collapse Explore sidebar into a hamburger/drawer on mobile; full-width inputs below `768 px`
+
+- [ ] **T-UX8 — [Frontend] Theme persistence + system preference** — persist theme choice to `localStorage`; honour `prefers-color-scheme` on first load when no saved preference exists; add `transition: background-color 200ms, color 200ms` for a smooth toggle
+
+- [ ] **T-UX9 — [Frontend] Accessibility** — `aria-label` on all icon-only buttons; `role="main"` on the content area; every `<input>` has an associated `<label>`; `focus-visible` outline using `--color-accent` token; full keyboard navigation through the form without a mouse
+
+- [ ] **T-UX10 — [Frontend] Micro-animations & polish** — fade-in on initial page load; card hover: subtle `box-shadow` lift using `--shadow-*` token; smooth transition when framework options change after a project-type selection; button loading spinner replaces button label text during generation
+
+---
+
+## Phase 12 — AI Agent Capabilities
+> High complexity. Adds a new `ai-agent` project type and two new cross-cutting addon categories (`ai`, `vectorstore`) available to all project types. The `framework` field maps to LLM provider for `ai-agent`. Frontend picks up all changes automatically via `/api/meta`.
+
+**Supported LLM providers (framework values for `ai-agent`):** `langchaingo`, `openai`, `gemini`, `ollama`
+
+**New addon categories:**
+- `ai` — adds `internal/ai/client.go`; values: `openai`, `langchaingo`, `gemini`, `ollama`
+- `vectorstore` — adds `internal/vectorstore/store.go`; values: `pgvector`, `chromem`, `qdrant`
+
+**`ai-agent` project layout:**
+```
+<name>/
+├── main.go                    # calls agent.Run()
+├── agent/
+│   └── agent.go               # ReAct-style LLM loop
+├── tools/
+│   └── tools.go               # sample tool stubs (function calling)
+├── llm/
+│   └── client.go              # LLM provider initialisation
+├── internal/
+│   ├── logger/logger.go       # if "other" logging addon selected
+│   └── vectorstore/store.go   # if "vectorstore" addon selected
+├── go.mod
+├── .gitignore
+├── Makefile
+├── README.md
+└── Dockerfile                 # if dockerSupport is true
+```
+
+### Phase A — Registry & Metadata
+
+- [ ] **T-AI1 — [Backend] Extend `DependencyMap`** — add versioned entries in `registry.go` for: `langchaingo` (`github.com/tmc/langchaingo`), `openai` (`github.com/openai/openai-go`), `gemini` (`github.com/google/generative-ai-go`), `ollama` (`github.com/ollama/ollama`), `pgvector` (`github.com/pgvector/pgvector-go`), `chromem` (`github.com/philippgille/chromem-go`), `qdrant` (`github.com/qdrant/go-client`)
+
+- [ ] **T-AI2 — [Backend] Extend Supported\* maps and registries** — in `registry.go`:
+  - `SupportedProjectTypesMap` → add `"ai-agent": true`
+  - `SupportedProjectTypesLabelsMap` → add `"ai-agent": "AI Agent"`
+  - `SupportedFrameworksMap` → add `"ai-agent"` key with `langchaingo | openai | gemini | ollama`
+  - `SupportedAddonsMap` → add `"ai"` category (`openai`, `langchaingo`, `gemini`, `ollama`) and `"vectorstore"` category (`pgvector`, `chromem`, `qdrant`)
+  - `addonRegistry` → register `&AIAddonGen{}` under `"ai"` and `&VectorStoreAddonGen{}` under `"vectorstore"`
+  - `GeneratorRegistry` → register `&AIAgentGenerator{}` under `"ai-agent"`
+
+- [ ] **T-AI3 — [Backend] Update `CreateProjectRequest` validate tag** — add `ai-agent` to the `oneof` enum in `types.go`: `oneof=microservice simple-project cli-app api-server ai-agent`
+
+### Phase B — Code Generation Helpers
+> Parallel with each other; depends on Phase A.
+
+- [ ] **T-AI4 — [Backend] Add `GenerateLLMClient(framework string) []byte`** — returns `llm/client.go`; provider-specific initialisation:
+  - `langchaingo` — `llms.New()` with provider selection via env var
+  - `openai` — `openai.NewClient(os.Getenv("OPENAI_API_KEY"))`
+  - `gemini` — `genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))`
+  - `ollama` — HTTP client pointing at `OLLAMA_HOST` (default `http://localhost:11434`)
+
+- [ ] **T-AI5 — [Backend] Add `GenerateAgentContent(framework, name string) []byte`** — returns `agent/agent.go`; ReAct-style loop per provider: langchaingo agent executor, openai tool-calling loop, gemini function-calling loop, ollama prompt loop with JSON tool parsing
+
+- [ ] **T-AI6 — [Backend] Add `GenerateToolsContent(framework string) []byte`** — returns `tools/tools.go`; sample tool stub using the framework's tool interface (`tools.Tool` for langchaingo, `openai.ChatCompletionToolParam` for openai, `genai.FunctionDeclaration` for gemini, JSON schema struct for ollama)
+
+- [ ] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
+
+- [ ] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
+  - `pgvector` — pgx v5 + pgvector-go connection + sample insert/query
+  - `chromem` — `chromem.NewPersistentDB` with sample collection create/query
+  - `qdrant` — qdrant gRPC client init + sample upsert/search
+
+All five helpers added to `internal/generator/gen_utils.go`.
+
+### Phase C — Generator & Addon Structs
+> Depends on Phase B.
+
+- [ ] **T-AI9 — [Backend] Create `gen_ai_agent.go`** — `AIAgentGenerator.Generate()` wires all Phase B helpers; always emits `main.go`, `agent/agent.go`, `tools/tools.go`, `llm/client.go`, `go.mod` (via `GenerateGoModV2`), `.gitignore`, `Makefile`, `README.md`; handles `"other"` logging addon inline (same pattern as other generators); handles `"vectorstore"` addon via `GenerateVectorStoreContent`; emits `Dockerfile` when `DockerSupport` is true
+
+- [ ] **T-AI10 — [Backend] Add `AIAddonGen` struct** — implements `AddonGenerator`; called when the `ai` addon is selected on any project type; writes `GenerateAIAddonContent(provider)` output to `internal/ai/client.go` in the zip
+
+- [ ] **T-AI11 — [Backend] Add `VectorStoreAddonGen` struct** — implements `AddonGenerator`; called when the `vectorstore` addon is selected on any project type; writes `GenerateVectorStoreContent(store)` output to `internal/vectorstore/store.go` in the zip
+
+`AIAddonGen` and `VectorStoreAddonGen` can be defined inline in `registry.go` or in a dedicated `gen_ai_addon.go`.
+
+---
+
+## Phase 13 — Distribution & Release
 > Low-medium complexity. Packaging and delivery pipeline.
 
 ### `go install` (Primary)
@@ -455,18 +570,37 @@ On: GitHub Release published
 | 8 — Infrastructure & DevX | T24–T25c | Low | Any | Open |
 | 9 — Repo Restructure | T26–T29 | Medium | Phase 5 + Phase 8 | Open |
 | 10 — `goini` CLI Binary | T30–T35 | High | Phase 9 | Open |
-| 11 — Distribution & Release | T36–T39 | Low-Medium | Phase 10 | Open |
+| 11 — Frontend UI/UX Overhaul | T-UX1–T-UX10 | Medium-High | Phase 1 (stable API) | Open |
+| 12 — AI Agent Capabilities | T-AI1–T-AI11 | High | Phase 2 | Open |
+| 13 — Distribution & Release | T36–T39 | Low-Medium | Phases 11 + 12 | Open |
 
 ---
 
 ## Dependencies to Add
 
+### Go (backend)
+
 | Package | Version | Purpose |
 |---|---|---|
 | `github.com/spf13/cobra` | `v1.10.2` | CLI command framework for `goini` |
 | `github.com/charmbracelet/huh` | `latest` | Terminal form / interactive prompts |
+| `github.com/tmc/langchaingo` | `latest` | LangChain-style LLM orchestration |
+| `github.com/openai/openai-go` | `latest` | Official OpenAI Go SDK |
+| `github.com/google/generative-ai-go` | `latest` | Google Gemini SDK |
+| `github.com/ollama/ollama` | `latest` | Ollama local LLM client |
+| `github.com/pgvector/pgvector-go` | `latest` | pgvector support for Go (pgx v5) |
+| `github.com/philippgille/chromem-go` | `latest` | Embedded vector DB (no external service) |
+| `github.com/qdrant/go-client` | `latest` | Qdrant gRPC client |
 
-Both packages are pure Go with no CGO requirements — the binary remains fully static and cross-compilable.
+All Go packages have no CGO requirements — the binary remains fully static and cross-compilable.
+
+### Frontend (npm)
+
+| Package | Purpose |
+|---|---|
+| `vite` + `@vitejs/plugin-react` | Replaces CRA as build tool |
+| `@fontsource/geist` | Geist font (self-hosted, no CDN) |
+| `react-syntax-highlighter` | Fenced code-block highlighting in Explore docs |
 
 ---
 
@@ -480,5 +614,11 @@ Both packages are pure Go with no CGO requirements — the binary remains fully 
 | 4. Delete `backend/`, update CI (T29) | Phase 9 | Phase 10 |
 | 5. CLI skeleton + `list` commands (T30, T31) | Phase 10 | T32–T35 |
 | 6. `goini new` flags + prompts + engine wiring (T32–T35) | Phase 10 | Phase 11 |
-| 7. goreleaser + release workflow + Homebrew (T36–T38) | Phase 11 | T39 |
-| 8. README update (T39) | Phase 11 | — |
+| 7. Migrate CRA → Vite (T-UX1) | Phase 11 | All other UX tasks |
+| 8. Design token layer + Geist font (T-UX2) | Phase 11 | T-UX3 through T-UX10 |
+| 9. App shell + form + docs redesign (T-UX3–T-UX6) | Phase 11 | T-UX7–T-UX10 |
+| 10. Responsive, a11y, polish (T-UX7–T-UX10) | Phase 11 | Phase 13 |
+| 11. Extend `DependencyMap` + Supported\* maps (T-AI1–T-AI3) | Phase 12 | T-AI4 onward |
+| 12. LLM helper generators (T-AI4–T-AI8) | Phase 12 | T-AI9 |
+| 13. `AIAgentGenerator` + addon structs (T-AI9–T-AI11) | Phase 12 | Phase 13 |
+| 14. goreleaser + release workflow + Homebrew + README (T36–T39) | Phase 13 | — |
