@@ -58,20 +58,20 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 									borderRadius: 4,
 									transition: 'background 0.15s',
 								}}
-								onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+					onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
 								onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
 							>
-								<span style={{ fontSize: 11, color: '#888', width: 12, flexShrink: 0 }}>
+								<span style={{ fontSize: 11, color: 'var(--color-text-muted)', width: 12, flexShrink: 0 }}>
 									{collapsedGroups[group.group] ? '▶' : '▼'}
 								</span>
-								<span style={{ fontSize: 13, color: '#ffd700' }}>📁</span>
+								<span style={{ fontSize: 13, color: 'var(--color-accent)' }}>📁</span>
 								<Text
 									size="1"
 									weight="bold"
 									style={{
 										textTransform: 'uppercase',
 										letterSpacing: '0.08em',
-										color: '#aaa',
+										color: 'var(--color-text-muted)',
 									}}
 								>
 									{group.group}
@@ -95,7 +95,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 														top: 0,
 														bottom: isLast ? '50%' : 0,
 														width: 1,
-														background: '#444',
+														background: 'var(--color-border)',
 													}} />
 													{/* Horizontal line */}
 													<div style={{
@@ -104,7 +104,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 														top: '50%',
 														width: 14,
 														height: 1,
-														background: '#444',
+														background: 'var(--color-border)',
 													}} />
 												</div>
 												<button
@@ -119,13 +119,13 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 														padding: '0.4rem 0.75rem 0.4rem 0',
 														fontSize: 13,
 														fontWeight: active ? 700 : 400,
-														color: active ? '#ffd700' : 'inherit',
-														borderLeft: active ? '2px solid #ffd700' : '2px solid transparent',
-														background: active ? 'rgba(255, 215, 0, 0.08)' : 'transparent',
-														borderRadius: '0 4px 4px 0',
+														color: active ? 'var(--color-accent)' : 'inherit',
+														borderLeft: active ? '2px solid var(--color-accent)' : '2px solid transparent',
+														background: active ? 'var(--color-accent-dim)' : 'transparent',
+														borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
 														transition: 'background 0.15s, color 0.15s',
 													}}
-													onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+								onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
 													onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
 													aria-current={active ? 'page' : undefined}
 												>
@@ -156,7 +156,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 				<Card style={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden' }}>
 					<div style={{ height: '100%', overflowY: 'auto', padding: '2.5rem 3rem', boxSizing: 'border-box' }}>
 						{loading ? (
-							<Text size="3" style={{ color: '#888' }}>Loading…</Text>
+						<Text size="3" style={{ color: 'var(--color-text-muted)' }}>Loading…</Text>
 						) : (
 							<div className="docs-content">
 								<ReactMarkdown remarkPlugins={[remarkGfm]}>

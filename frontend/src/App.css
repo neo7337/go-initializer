@@ -1,72 +1,77 @@
-/* Theme variables */
+/* ── Design System Tokens ─────────────────────────────────────── */
 :root {
-  --center-card-bg: #fffbe6;
-  --center-card-border: #ffd700;
-  --background: #f5f5f5;
-  --text: #222;
-  --navbar-bg: #282c34;
-  --navbar-text: #fff;
-  --navbar-link: #fff;
-  --theme-btn-bg: #fff;
-  --theme-btn-text: #222;
-  --content-bg: #e3e8f0;
-  --card-bg: #fff;
-  --footer-bg: #222;
-  --footer-text: #fff;
+  /* Surface elevations */
+  --color-surface-0: #0d0e10;
+  --color-surface-1: #181a1b;
+  --color-surface-2: #23272f;
+  --color-surface-3: #2e3340;
+
+  /* Text */
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #cccccc;
+  --color-text-muted: #888888;
+
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.1);
+
+  /* Accent */
+  --color-accent: #ffd700;
+  --color-accent-dim: rgba(255, 215, 0, 0.08);
+  --color-accent-hover: #ffe033;
+
+  /* Semantic */
+  --color-success: #22c55e;
+  --color-success-dim: rgba(34, 197, 94, 0.08);
+  --color-destructive: #ef4444;
+  --color-destructive-dim: rgba(239, 68, 68, 0.08);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+  /* Legacy aliases (kept for backward compat with existing component inline styles) */
+  --background: var(--color-surface-1);
+  --text: var(--color-text-primary);
+  --navbar-bg: var(--color-surface-2);
+  --navbar-text: var(--color-text-primary);
+  --content-bg: var(--color-surface-1);
+  --card-bg: var(--color-surface-2);
+  --footer-bg: var(--color-surface-0);
+  --footer-text: var(--color-text-muted);
 }
 
-[data-theme='dark'] {
-  --center-card-bg: #23272f;
-  --center-card-border: #ffd700;
-  --background: #181a1b;
-  --text: #f5f5f5;
-  --navbar-bg: #23272f;
-  --navbar-text: #fff;
-  --navbar-link: #fff;
-  --theme-btn-bg: #23272f;
-  --theme-btn-text: #f5f5f5;
-  --content-bg: #181a1b;
-  --card-bg: #23272f;
-  --footer-bg: #181a1b;
-  --footer-text: #aaa;
+/* Light theme override */
+[data-theme='light'] {
+  --color-surface-0: #f0f2f5;
+  --color-surface-1: #f5f7fa;
+  --color-surface-2: #ffffff;
+  --color-surface-3: #e8ecf2;
+
+  --color-text-primary: #111111;
+  --color-text-secondary: #444444;
+  --color-text-muted: #777777;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-accent-dim: rgba(255, 215, 0, 0.15);
+
+  --background: var(--color-surface-1);
+  --text: var(--color-text-primary);
+  --navbar-bg: #282c34;
+  --navbar-text: #ffffff;
+  --content-bg: #e3e8f0;
+  --card-bg: var(--color-surface-2);
+  --footer-bg: #222222;
+  --footer-text: #ffffff;
 }
+
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ── Docs / Explore markdown content ──────────────────────────── */
@@ -111,25 +116,28 @@
 }
 
 .docs-content a {
-  color: #bfa100;
+  color: var(--color-accent);
   text-decoration: underline;
+  opacity: 0.85;
 }
 
 .docs-content a:hover {
-  color: #ffd700;
+  color: var(--color-accent-hover);
+  opacity: 1;
 }
 
 .docs-content code {
   background: rgba(128, 128, 128, 0.15);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.15em 0.4em;
   font-size: 0.88em;
-  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-family: 'Geist Mono', 'Fira Mono', 'Consolas', monospace;
 }
 
 .docs-content pre {
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
   overflow-x: auto;
   margin: 0 0 1.25rem;
@@ -156,17 +164,17 @@
 }
 
 .docs-content th {
-  background: rgba(128, 128, 128, 0.1);
+  background: var(--color-surface-3);
   font-weight: 600;
 }
 
 .docs-content blockquote {
-  border-left: 3px solid #ffd700;
+  border-left: 3px solid var(--color-accent);
   margin: 0 0 1rem;
   padding: 0.5rem 1rem;
-  color: rgba(128, 128, 128, 0.9);
-  background: rgba(255, 215, 0, 0.05);
-  border-radius: 0 6px 6px 0;
+  color: var(--color-text-muted);
+  background: var(--color-accent-dim);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 .docs-content hr {

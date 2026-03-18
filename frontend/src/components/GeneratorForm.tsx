@@ -7,12 +7,12 @@ const inputStyle = (hasError: boolean): React.CSSProperties => ({
   width: '100%',
   padding: '0.7rem',
   fontSize: 16,
-  borderRadius: 8,
-  border: hasError ? '2px solid #ff4d4f' : '1.5px solid #e3e8f0',
-  background: 'var(--card-bg)',
-  color: 'var(--text)',
+  borderRadius: 'var(--radius-md)',
+  border: hasError ? '2px solid var(--color-destructive)' : '1.5px solid var(--color-border)',
+  background: 'var(--color-surface-3)',
+  color: 'var(--color-text-primary)',
   fontWeight: 500,
-  outline: hasError ? '2px solid #ff4d4f' : 'none',
+  outline: hasError ? '2px solid var(--color-destructive)' : 'none',
   marginTop: 4,
 });
 

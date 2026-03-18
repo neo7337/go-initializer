@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 import { Theme, Button, Flex, Heading, Text } from '@radix-ui/themes';
 import Explore from './components/Explore';
 import GeneratorForm from './components/GeneratorForm';
@@ -29,7 +28,7 @@ function App() {
                                 onClick={() => setShowExplore(false)}
                                 title="Go home"
                             >
-                                go<span style={{ color: '#ffd700' }}>initializer</span>
+                                go<span style={{ color: 'var(--color-accent)' }}>initializer</span>
                             </Heading>
                         </Flex>
                         <Button variant="ghost" color="gray" radius="full" size="3" onClick={toggleTheme} title="Toggle theme">
