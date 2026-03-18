@@ -351,7 +351,7 @@ goini new \
 
 ### Phase B — Layout & Navigation
 
-- [ ] **T-UX3 — [Frontend] App shell redesign** — replace all inline `React.CSSProperties` in `App.tsx` with Tailwind/CSS classes; new sticky header with backdrop-blur, Geist logo wordmark, theme toggle using SVG icons (not emoji), GitHub icon button with `aria-label`; slim footer (copyright + links only); centred max-width container for main content
+- [x] **T-UX3 — [Frontend] App shell redesign** — replace all inline `React.CSSProperties` in `App.tsx` with Tailwind/CSS classes; new sticky header with backdrop-blur, Geist logo wordmark, theme toggle using SVG icons (not emoji), GitHub icon button with `aria-label`; slim footer (copyright + links only); centred max-width container for main content
 
 ### Phase C — Generator Form
 

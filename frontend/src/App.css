@@ -35,6 +35,9 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
 
+  /* Semi-transparent header background */
+  --color-header-bg: rgba(35, 39, 47, 0.85);
+
   /* Legacy aliases (kept for backward compat with existing component inline styles) */
   --background: var(--color-surface-1);
   --text: var(--color-text-primary);
@@ -60,6 +63,8 @@
   --color-border: rgba(0, 0, 0, 0.1);
   --color-accent-dim: rgba(255, 215, 0, 0.15);
 
+  --color-header-bg: rgba(255, 255, 255, 0.9);
+
   --background: var(--color-surface-1);
   --text: var(--color-text-primary);
   --navbar-bg: #282c34;
@@ -70,8 +75,154 @@
   --footer-text: #ffffff;
 }
 
-.App {
-  text-align: center;
+/* ── App Shell ────────────────────────────────────────────────── */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+  transition: background 0.2s, color 0.2s;
+}
+
+.app-shell--locked {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sticky header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo wordmark */
+.logo-wordmark {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Geist', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  text-decoration: none;
+}
+
+.logo-go {
+  color: var(--color-text-primary);
+}
+
+.logo-accent {
+  color: var(--color-accent);
+}
+
+/* Header icon buttons */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+  padding: 2.5rem 1rem;
+}
+
+.app-main--explore {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Centred max-width content container */
+.main-centered {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Slim footer */
+.app-footer {
+  background: var(--color-surface-0);
+  border-top: 1px solid var(--color-border);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.875rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-copy {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.footer-links a {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer-links a:hover {
+  color: var(--color-text-secondary);
 }
 
 /* ── Docs / Explore markdown content ──────────────────────────── */
