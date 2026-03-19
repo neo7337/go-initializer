@@ -1,0 +1,82 @@
+version: 2
+
+project_name: goini
+
+before:
+  hooks:
+    - go mod tidy
+    - mkdir -p completions
+    - sh -c "go run ./cmd/goini completion bash > completions/goini.bash"
+    - sh -c "go run ./cmd/goini completion zsh  > completions/goini.zsh"
+    - sh -c "go run ./cmd/goini completion fish > completions/goini.fish"
+
+builds:
+  - id: goini
+    main: ./cmd/goini
+    binary: goini
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+
+archives:
+  - id: goini
+    builds:
+      - goini
+    name_template: "goini_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - completions/*
+
+checksum:
+  name_template: "goini_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: "New Features"
+      regexp: "^feat"
+      order: 0
+    - title: "Bug Fixes"
+      regexp: "^fix"
+      order: 1
+    - title: "Other Changes"
+      order: 999
+
+brews:
+  - name: goini
+    repository:
+      owner: neo7337
+      name: homebrew-goini
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/neo7337/go-initializer"
+    description: "Scaffold production-ready Go projects from the command line"
+    license: "MIT"
+    test: |
+      system "#{bin}/goini", "version"
+    install: |
+      bin.install "goini"
+      bash_completion.install "completions/goini.bash" => "goini"
+      zsh_completion.install "completions/goini.zsh" => "_goini"
+      fish_completion.install "completions/goini.fish"

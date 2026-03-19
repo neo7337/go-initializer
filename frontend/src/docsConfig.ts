@@ -33,26 +33,96 @@ const docsConfig: DocGroup[] = [
 				title: 'Quick Start',
 				file: '/docs/quick-start.md',
 			},
+			{
+				id: 'installation',
+				title: 'Installation',
+				file: '/docs/installation.md',
+			},
 		],
 	},
 	{
-		group: 'Guides',
+		group: 'Application Guide',
 		pages: [
 			{
-				id: 'microservices',
-				title: 'Microservices Best Practices',
-				file: '/docs/microservices.md',
+				id: 'app-architecture',
+				title: 'Architecture Overview',
+				file: '/docs/app-architecture.md',
+			},
+			{
+				id: 'project-types',
+				title: 'Project Types',
+				file: '/docs/project-types.md',
 			},
 			{
 				id: 'frameworks',
 				title: 'Choosing a Framework',
 				file: '/docs/frameworks.md',
 			},
+			{
+				id: 'microservices',
+				title: 'Microservices Best Practices',
+				file: '/docs/microservices.md',
+			},
+		],
+	},
+	{
+		group: 'How-To',
+		pages: [
+			{
+				id: 'how-to-web-ui',
+				title: 'Using the Web UI',
+				file: '/docs/how-to-web-ui.md',
+			},
+			{
+				id: 'how-to-cli',
+				title: 'Using the goini CLI',
+				file: '/docs/how-to-cli.md',
+			},
+			{
+				id: 'how-to-addons',
+				title: 'Working with Add-ons',
+				file: '/docs/how-to-addons.md',
+			},
+			{
+				id: 'docker-setup',
+				title: 'Docker Setup',
+				file: '/docs/docker-setup.md',
+			},
+			{
+				id: 'how-to-self-host',
+				title: 'Self-Hosting',
+				file: '/docs/how-to-self-host.md',
+			},
+		],
+	},
+	{
+		group: 'Reference',
+		pages: [
+			{
+				id: 'api-reference',
+				title: 'REST API Reference',
+				file: '/docs/api-reference.md',
+			},
+			{
+				id: 'configuration',
+				title: 'Configuration',
+				file: '/docs/configuration.md',
+			},
+			{
+				id: 'troubleshooting',
+				title: 'Troubleshooting',
+				file: '/docs/troubleshooting.md',
+			},
 		],
 	},
 	{
 		group: 'Community',
 		pages: [
+			{
+				id: 'contributing',
+				title: 'Contributing',
+				file: '/docs/contributing.md',
+			},
 			{
 				id: 'community-resources',
 				title: 'Community Resources',

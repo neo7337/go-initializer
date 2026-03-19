@@ -1,6 +1,6 @@
 // src/service.ts
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8182';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8182';
 
 /** Default request timeout in milliseconds. */
 const DEFAULT_TIMEOUT_MS = 15_000;

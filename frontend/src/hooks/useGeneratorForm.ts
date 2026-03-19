@@ -33,6 +33,8 @@ export function useGeneratorForm() {
   const [addonOptions, setAddonOptions] = useState<Record<string, { value: string; label: string }[]>>({});
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateSuccess, setGenerateSuccess] = useState(false);
+  const [successCountdown, setSuccessCountdown] = useState(5);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const currentFrameworkOptions = useMemo(
     () => supportedFrameworkOptions[projectType] || [],
@@ -55,6 +57,26 @@ export function useGeneratorForm() {
         console.error('Error fetching metadata:', error);
       });
   }, []);
+
+  // Auto-dismiss success banner after 5 s with countdown
+  useEffect(() => {
+    if (!generateSuccess) {
+      setSuccessCountdown(5);
+      return;
+    }
+    setSuccessCountdown(5);
+    const interval = setInterval(() => {
+      setSuccessCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setGenerateSuccess(false);
+          return 5;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [generateSuccess]);
 
   const handleAddonChange = (category: AddonCategory, value: string) => {
     setSelectedAddons(prev => {
@@ -85,6 +107,7 @@ export function useGeneratorForm() {
     if (!validateInput()) return;
     setGenerateError(null);
     setGenerateSuccess(false);
+    setIsGenerating(true);
     generateProject({ projectType, goVersion, framework, moduleName, name, description, selectedAddons: selectedAddons as Record<string, string[]>, dockerSupport })
       .then(blob => {
         const url = window.URL.createObjectURL(blob);
@@ -99,6 +122,9 @@ export function useGeneratorForm() {
       })
       .catch(error => {
         setGenerateError(error.message);
+      })
+      .finally(() => {
+        setIsGenerating(false);
       });
   }, [validateInput, projectType, goVersion, framework, moduleName, name, description, selectedAddons, dockerSupport]);
 
@@ -134,6 +160,8 @@ export function useGeneratorForm() {
     addonOptions,
     generateError, setGenerateError,
     generateSuccess, setGenerateSuccess,
+    successCountdown,
+    isGenerating,
     isMac,
     handleGenerate,
   };

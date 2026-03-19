@@ -8,7 +8,7 @@ COPY . .
 ARG API_BASE_URL
 
 # Set environment variables for the build
-ENV REACT_APP_API_URL=${API_BASE_URL}
+ENV VITE_API_URL=${API_BASE_URL}
 
 RUN npm run build
 
@@ -29,7 +29,7 @@ RUN touch /var/run/nginx.pid && \
 USER nginxuser
 
 # Copy static files (ensure they are owned by the new user)
-COPY --from=builder --chown=nginxuser:nginxgroup /app/build /usr/share/nginx/html
+COPY --from=builder --chown=nginxuser:nginxgroup /app/dist /usr/share/nginx/html
 
 # copy custom nginx config
 COPY --chown=nginxuser:nginxgroup nginx.conf /etc/nginx/conf.d/default.conf
