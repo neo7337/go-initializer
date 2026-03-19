@@ -371,7 +371,7 @@ goini new \
 
 - [x] **T-UX9 — [Frontend] Accessibility** — `aria-label` on all icon-only buttons; `role="main"` on the content area; every `<input>` has an associated `<label>`; `focus-visible` outline using `--color-accent` token; full keyboard navigation through the form without a mouse
 
-- [ ] **T-UX10 — [Frontend] Micro-animations & polish** — fade-in on initial page load; card hover: subtle `box-shadow` lift using `--shadow-*` token; smooth transition when framework options change after a project-type selection; button loading spinner replaces button label text during generation
+- [x] **T-UX10 — [Frontend] Micro-animations & polish** — fade-in on initial page load; card hover: subtle `box-shadow` lift using `--shadow-*` token; smooth transition when framework options change after a project-type selection; button loading spinner replaces button label text during generation
 
 ---
 

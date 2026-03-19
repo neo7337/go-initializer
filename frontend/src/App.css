@@ -76,6 +76,11 @@
 }
 
 /* ── App Shell ────────────────────────────────────────────────── */
+@keyframes app-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .app-shell {
   min-height: 100vh;
   display: flex;
@@ -83,6 +88,7 @@
   background: var(--color-surface-1);
   color: var(--color-text-primary);
   transition: background 0.2s, color 0.2s;
+  animation: app-fade-in 0.4s ease-out both;
 }
 
 .app-shell--locked {
@@ -794,6 +800,50 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
+}
+
+/* ── Form card with hover lift ───────────────────────────────── */
+.form-card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.form-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+[data-theme='light'] .form-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* ── Framework options fade-in on project-type change ─────────── */
+@keyframes options-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.framework-options-fade {
+  animation: options-fade-in 0.2s ease-out both;
+}
+
+/* ── Generate button hover lift ───────────────────────────────── */
+.generate-btn {
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s !important;
+}
+
+.generate-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(255,215,0,0.5), var(--shadow-md) !important;
+}
+
+.generate-btn:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 1px rgba(255,215,0,0.3), var(--shadow-sm) !important;
 }
 
 /* ── Spinner animation ────────────────────────────────────────── */

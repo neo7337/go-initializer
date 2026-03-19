@@ -239,13 +239,6 @@ const Spinner: React.FC = () => (
   </svg>
 );
 
-/* ── Shared card style ──────────────────────────────────────────── */
-const card: React.CSSProperties = {
-  background: 'var(--color-surface-2)',
-  border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-lg)',
-  padding: '1.5rem',
-};
 
 /* ── Shared field label style ───────────────────────────────────── */
 const fieldLabel: React.CSSProperties = {
@@ -285,7 +278,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} role="form" aria-label="Project generator">
 
       {/* 01 — Go Version */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="01" label="Go Version" />
         <div role="group" aria-label="Go Version">
           <Flex wrap="wrap" gap="2">
@@ -308,7 +301,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       </div>
 
       {/* 02 — Project Type */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="02" label="Project Type" />
         <div role="group" aria-label="Project Type">
           <Flex wrap="wrap" gap="2">
@@ -334,14 +327,14 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       </div>
 
       {/* 03 — Framework */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="03" label="Framework / Dependency" />
         {!currentFrameworkOptions.length ? (
           <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
             Select a project type to see available frameworks.
           </Text>
         ) : (
-          <div role="group" aria-label="Framework">
+          <div key={projectType} role="group" aria-label="Framework" className="framework-options-fade">
             <Flex wrap="wrap" gap="2">
               {currentFrameworkOptions.map(fw => (
                 <PillButton
@@ -363,7 +356,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       </div>
 
       {/* 04 — Addons */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="04" label="Addons" />
         <Flex direction="column" gap="4">
           {Object.entries(addonOptions).map(([category, opts]) => {
@@ -401,7 +394,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       </div>
 
       {/* 05 — Docker Support */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="05" label="Docker Support" />
         <Flex align="center" gap="3">
           <TagChip
@@ -417,7 +410,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       </div>
 
       {/* 06 — Project Details */}
-      <div style={card}>
+      <div className="form-card">
         <SectionLabel number="06" label="Project Details" />
         <Flex direction="column" gap="4">
           <div>
@@ -482,6 +475,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       {/* Generate Button */}
       <button
         type="button"
+        className="generate-btn"
         disabled={isGenerating}
         onClick={handleGenerate}
         aria-label={`Generate project${isMac ? ' (⌘↵)' : ' (Ctrl+↵)'}`}
