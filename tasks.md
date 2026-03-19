@@ -433,7 +433,7 @@ goini new \
 
 - [x] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
 
-- [ ] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
+- [x] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
   - `pgvector` — pgx v5 + pgvector-go connection + sample insert/query
   - `chromem` — `chromem.NewPersistentDB` with sample collection create/query
   - `qdrant` — qdrant gRPC client init + sample upsert/search
