@@ -361,13 +361,13 @@ goini new \
 
 ### Phase D — Explore / Docs Browser
 
-- [ ] **T-UX6 — [Frontend] Docs browser redesign** — replace the brittle positioned-div sidebar tree with a semantic `<nav>` element; add CSS `max-height` collapse/expand animation; active page: left accent-border + tinted background; replace emoji folder/file icons with inline SVG icons; add a breadcrumb bar at the top of the content pane; add syntax highlighting to fenced code blocks via `react-syntax-highlighter` + Prism; replace the "Loading…" text with a skeleton loader; add a copy-to-clipboard button on every code block
+- [x] **T-UX6 — [Frontend] Docs browser redesign** — replace the brittle positioned-div sidebar tree with a semantic `<nav>` element; add CSS `max-height` collapse/expand animation; active page: left accent-border + tinted background; replace emoji folder/file icons with inline SVG icons; add a breadcrumb bar at the top of the content pane; add syntax highlighting to fenced code blocks via `react-syntax-highlighter` + Prism; replace the "Loading…" text with a skeleton loader; add a copy-to-clipboard button on every code block
 
 ### Phase E — Polish & Quality
 
-- [ ] **T-UX7 — [Frontend] Responsive design** — add breakpoints for mobile (`< 768 px`) and tablet (`768–1024 px`): stack form sections vertically on mobile; collapse Explore sidebar into a hamburger/drawer on mobile; full-width inputs below `768 px`
+- [x] **T-UX7 — [Frontend] Responsive design** — add breakpoints for mobile (`< 768 px`) and tablet (`768–1024 px`): stack form sections vertically on mobile; collapse Explore sidebar into a hamburger/drawer on mobile; full-width inputs below `768 px`
 
-- [ ] **T-UX8 — [Frontend] Theme persistence + system preference** — persist theme choice to `localStorage`; honour `prefers-color-scheme` on first load when no saved preference exists; add `transition: background-color 200ms, color 200ms` for a smooth toggle
+- [x] **T-UX8 — [Frontend] Theme persistence + system preference** — persist theme choice to `localStorage`; honour `prefers-color-scheme` on first load when no saved preference exists; add `transition: background-color 200ms, color 200ms` for a smooth toggle
 
 - [ ] **T-UX9 — [Frontend] Accessibility** — `aria-label` on all icon-only buttons; `role="main"` on the content area; every `<input>` has an associated `<label>`; `focus-visible` outline using `--color-accent` token; full keyboard navigation through the form without a mouse
 

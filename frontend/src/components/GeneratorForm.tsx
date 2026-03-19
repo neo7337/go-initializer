@@ -425,7 +425,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
             />
             {errors.moduleName && touched.moduleName && <FieldError message={errors.moduleName} />}
           </div>
-          <Flex gap="4">
+          <Flex gap="4" className="form-name-desc-row">
             <div style={{ flex: 1 }}>
               <Text as="label" size="2" weight="bold" style={fieldLabel}>
                 Name

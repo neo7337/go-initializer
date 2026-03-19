@@ -395,7 +395,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 1.5rem;
   font-size: 0.8125rem;
 }
 
@@ -617,6 +616,149 @@
   border: none;
   border-top: 1px solid rgba(128, 128, 128, 0.2);
   margin: 2rem 0;
+}
+
+/* ── Explore topbar (breadcrumb + mobile hamburger) ─────────── */
+.explore-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  min-height: 28px;
+}
+
+/* Hamburger toggle — hidden on desktop, shown on mobile */
+.explore-mobile-toggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.explore-mobile-toggle:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
+}
+
+/* Close button inside drawer sidebar — hidden on desktop */
+.explore-sidebar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.explore-sidebar-close:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
+}
+
+/* Drawer backdrop overlay — hidden on desktop */
+.explore-drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* ── Responsive: Tablet (768 – 1024 px) ───────────────────────── */
+@media (max-width: 1024px) {
+  .app-main {
+    padding: 2rem 1.25rem;
+  }
+
+  .explore-sidebar {
+    width: 220px;
+    min-width: 200px;
+  }
+
+  .explore-content-scroll {
+    padding: 1.5rem 2rem;
+  }
+}
+
+/* ── Responsive: Mobile (< 768 px) ────────────────────────────── */
+@media (max-width: 767px) {
+  .app-main {
+    padding: 1rem 0.75rem;
+  }
+
+  .header-inner {
+    padding: 0 1rem;
+  }
+
+  .footer-inner {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* Name + Description pair stacks vertically */
+  .form-name-desc-row {
+    flex-direction: column !important;
+  }
+
+  /* Explore: show drawer toggle + overlay + slide-in sidebar */
+  .explore-mobile-toggle {
+    display: flex;
+  }
+
+  .explore-sidebar-close {
+    display: flex;
+  }
+
+  .explore-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    width: 280px;
+    min-width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .explore-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .explore-drawer-overlay--visible {
+    display: block;
+  }
+
+  .explore-content-scroll {
+    padding: 1rem 1.125rem;
+  }
+
+  /* Docs text slightly smaller on mobile */
+  .docs-content {
+    font-size: 14px;
+  }
 }
 
 /* ── Spinner animation ────────────────────────────────────────── */

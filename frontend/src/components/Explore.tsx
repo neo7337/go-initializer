@@ -60,6 +60,18 @@ const BreadcrumbSepIcon = () => (
 	</svg>
 );
 
+const HamburgerIcon = () => (
+	<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+		<path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+	</svg>
+);
+
+const XCloseIcon = () => (
+	<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+		<path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+	</svg>
+);
+
 // ── Skeleton Loader ────────────────────────────────────────────────────────────
 
 const SkeletonLoader: React.FC = () => (
@@ -136,6 +148,9 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 	const [content, setContent] = useState('');
 	const [loading, setLoading] = useState(true);
 	const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+	const [drawerOpen, setDrawerOpen] = useState(false);
+
+	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
 	const toggleGroup = (group: string) =>
 		setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
@@ -163,10 +178,24 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
 	return (
 		<div className="explore-shell">
+			{/* Backdrop overlay for mobile drawer */}
+			<div
+				className={`explore-drawer-overlay${drawerOpen ? ' explore-drawer-overlay--visible' : ''}`}
+				onClick={closeDrawer}
+				aria-hidden="true"
+			/>
+
 			{/* Sidebar */}
-			<nav className="explore-sidebar" aria-label="Documentation navigation">
+			<nav className={`explore-sidebar${drawerOpen ? ' explore-sidebar--open' : ''}`} aria-label="Documentation navigation">
 				<div className="explore-sidebar-header">
 					<span className="explore-sidebar-title">Explore</span>
+					<button
+						className="explore-sidebar-close"
+						onClick={closeDrawer}
+						aria-label="Close navigation"
+					>
+						<XCloseIcon />
+					</button>
 				</div>
 
 				<div className="explore-sidebar-tree">
@@ -200,7 +229,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 											<button
 												key={page.id}
 												className={`explore-page-btn${active ? ' explore-page-btn--active' : ''}`}
-												onClick={() => setSelectedId(page.id)}
+												onClick={() => { setSelectedId(page.id); closeDrawer(); }}
 												aria-current={active ? 'page' : undefined}
 											>
 												<span className="explore-page-icon">
@@ -232,9 +261,20 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 			{/* Main content pane */}
 			<main className="explore-content" aria-label="Documentation content">
 				<div className="explore-content-scroll">
-					{selectedGroup && (
-						<Breadcrumb group={selectedGroup.group} page={selectedPage.title} />
-					)}
+					<div className="explore-topbar">
+						<button
+							className="explore-mobile-toggle"
+							onClick={() => setDrawerOpen(true)}
+							aria-label="Open navigation"
+							aria-expanded={drawerOpen}
+						>
+							<HamburgerIcon />
+							Menu
+						</button>
+						{selectedGroup && (
+							<Breadcrumb group={selectedGroup.group} page={selectedPage.title} />
+						)}
+					</div>
 					{loading ? (
 						<SkeletonLoader />
 					) : (

@@ -29,12 +29,22 @@ const GitHubIcon = () => (
     </svg>
 );
 
+function getInitialTheme(): string {
+    try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') return saved;
+    } catch { /* localStorage unavailable */ }
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    return 'dark';
+}
+
 function App() {
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState(getInitialTheme);
     const [showExplore, setShowExplore] = useState(false);
 
     useEffect(() => {
         document.body.setAttribute('data-theme', theme);
+        try { localStorage.setItem('theme', theme); } catch { /* ignore */ }
     }, [theme]);
 
     const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
