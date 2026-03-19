@@ -421,17 +421,17 @@ goini new \
 ### Phase B — Code Generation Helpers
 > Parallel with each other; depends on Phase A.
 
-- [ ] **T-AI4 — [Backend] Add `GenerateLLMClient(framework string) []byte`** — returns `llm/client.go`; provider-specific initialisation:
+- [x] **T-AI4 — [Backend] Add `GenerateLLMClient(framework string) []byte`** — returns `llm/client.go`; provider-specific initialisation:
   - `langchaingo` — `llms.New()` with provider selection via env var
   - `openai` — `openai.NewClient(os.Getenv("OPENAI_API_KEY"))`
   - `gemini` — `genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))`
   - `ollama` — HTTP client pointing at `OLLAMA_HOST` (default `http://localhost:11434`)
 
-- [ ] **T-AI5 — [Backend] Add `GenerateAgentContent(framework, name string) []byte`** — returns `agent/agent.go`; ReAct-style loop per provider: langchaingo agent executor, openai tool-calling loop, gemini function-calling loop, ollama prompt loop with JSON tool parsing
+- [x] **T-AI5 — [Backend] Add `GenerateAgentContent(framework, name string) []byte`** — returns `agent/agent.go`; ReAct-style loop per provider: langchaingo agent executor, openai tool-calling loop, gemini function-calling loop, ollama prompt loop with JSON tool parsing
 
-- [ ] **T-AI6 — [Backend] Add `GenerateToolsContent(framework string) []byte`** — returns `tools/tools.go`; sample tool stub using the framework's tool interface (`tools.Tool` for langchaingo, `openai.ChatCompletionToolParam` for openai, `genai.FunctionDeclaration` for gemini, JSON schema struct for ollama)
+- [x] **T-AI6 — [Backend] Add `GenerateToolsContent(framework string) []byte`** — returns `tools/tools.go`; sample tool stub using the framework's tool interface (`tools.Tool` for langchaingo, `openai.ChatCompletionToolParam` for openai, `genai.FunctionDeclaration` for gemini, JSON schema struct for ollama)
 
-- [ ] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
+- [x] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
 
 - [ ] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
   - `pgvector` — pgx v5 + pgvector-go connection + sample insert/query
