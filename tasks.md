@@ -369,7 +369,7 @@ goini new \
 
 - [x] **T-UX8 — [Frontend] Theme persistence + system preference** — persist theme choice to `localStorage`; honour `prefers-color-scheme` on first load when no saved preference exists; add `transition: background-color 200ms, color 200ms` for a smooth toggle
 
-- [ ] **T-UX9 — [Frontend] Accessibility** — `aria-label` on all icon-only buttons; `role="main"` on the content area; every `<input>` has an associated `<label>`; `focus-visible` outline using `--color-accent` token; full keyboard navigation through the form without a mouse
+- [x] **T-UX9 — [Frontend] Accessibility** — `aria-label` on all icon-only buttons; `role="main"` on the content area; every `<input>` has an associated `<label>`; `focus-visible` outline using `--color-accent` token; full keyboard navigation through the form without a mouse
 
 - [ ] **T-UX10 — [Frontend] Micro-animations & polish** — fade-in on initial page load; card hover: subtle `box-shadow` lift using `--shadow-*` token; smooth transition when framework options change after a project-type selection; button loading spinner replaces button label text during generation
 

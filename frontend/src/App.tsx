@@ -58,6 +58,7 @@ function App() {
                         <button
                             className="logo-wordmark"
                             onClick={() => setShowExplore(false)}
+                            aria-label="Go Initializer – go to home"
                             title="Go home"
                         >
                             <span className="logo-go">go</span><span className="logo-accent">initializer</span>
@@ -85,7 +86,7 @@ function App() {
                 </header>
 
                 {/* Main content */}
-                <main className={`app-main${showExplore ? ' app-main--explore' : ''}`}>
+                <main className={`app-main${showExplore ? ' app-main--explore' : ''}`} aria-label={showExplore ? 'Documentation' : 'Project generator'}>
                     {showExplore ? (
                         <Explore onBack={() => setShowExplore(false)} />
                     ) : (

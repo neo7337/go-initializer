@@ -761,6 +761,41 @@
   }
 }
 
+/* ── Accessibility: focus-visible outlines ───────────────────── */
+/* Global focus ring using accent colour — keyboard users only */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Suppress default ring for pointer/touch interactions */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Re-apply after all:unset (explore nav buttons + code copy button) */
+.explore-group-toggle:focus-visible,
+.explore-page-btn:focus-visible,
+.docs-code-copy:focus-visible,
+.explore-sidebar-close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Header icon buttons */
+.icon-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  background: var(--color-surface-3);
+}
+
+/* Logo button */
+.logo-wordmark:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
 /* ── Spinner animation ────────────────────────────────────────── */
 @keyframes spin {
   from { transform: rotate(0deg); }

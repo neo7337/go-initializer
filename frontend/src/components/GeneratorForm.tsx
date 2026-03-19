@@ -14,6 +14,7 @@ const PillButton: React.FC<PillButtonProps> = ({ selected, onClick, children }) 
   <button
     type="button"
     onClick={onClick}
+    aria-pressed={selected}
     style={{
       display: 'inline-flex',
       alignItems: 'center',
@@ -27,7 +28,6 @@ const PillButton: React.FC<PillButtonProps> = ({ selected, onClick, children }) 
       fontWeight: selected ? 600 : 400,
       fontSize: 14,
       cursor: 'pointer',
-      outline: 'none',
       boxShadow: selected ? '0 0 0 2px rgba(255,215,0,0.18)' : 'none',
       transition: 'border-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s',
       fontFamily: 'inherit',
@@ -49,6 +49,7 @@ const TagChip: React.FC<TagChipProps> = ({ selected, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
+    aria-pressed={selected}
     style={{
       display: 'inline-flex',
       alignItems: 'center',
@@ -63,7 +64,6 @@ const TagChip: React.FC<TagChipProps> = ({ selected, onClick, children }) => (
       fontWeight: selected ? 600 : 400,
       fontSize: 13,
       cursor: 'pointer',
-      outline: 'none',
       boxShadow: selected ? '0 0 0 2px rgba(255,215,0,0.15)' : 'none',
       transition: 'border-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s',
       fontFamily: 'inherit',
@@ -282,50 +282,54 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
   } = useGeneratorForm();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} role="form" aria-label="Project generator">
 
       {/* 01 — Go Version */}
       <div style={card}>
         <SectionLabel number="01" label="Go Version" />
-        <Flex wrap="wrap" gap="2">
-          {goVersionOptions.map(ver => (
-            <PillButton
-              key={ver.version}
-              selected={goVersion === ver.version}
-              onClick={() => {
-                setGoVersion(ver.version);
-                setTouched(t => ({ ...t, goVersion: true }));
-                setErrors(errs => ({ ...errs, goVersion: undefined }));
-              }}
-            >
-              {ver.label}
-            </PillButton>
-          ))}
-        </Flex>
+        <div role="group" aria-label="Go Version">
+          <Flex wrap="wrap" gap="2">
+            {goVersionOptions.map(ver => (
+              <PillButton
+                key={ver.version}
+                selected={goVersion === ver.version}
+                onClick={() => {
+                  setGoVersion(ver.version);
+                  setTouched(t => ({ ...t, goVersion: true }));
+                  setErrors(errs => ({ ...errs, goVersion: undefined }));
+                }}
+              >
+                {ver.label}
+              </PillButton>
+            ))}
+          </Flex>
+        </div>
         {errors.goVersion && touched.goVersion && <FieldError message={errors.goVersion} />}
       </div>
 
       {/* 02 — Project Type */}
       <div style={card}>
         <SectionLabel number="02" label="Project Type" />
-        <Flex wrap="wrap" gap="2">
-          {supportedProjectTypes.map(pt => {
-            const value = pt.type.toLowerCase().replace(/ /g, '-');
-            return (
-              <PillButton
-                key={pt.type}
-                selected={projectType === value}
-                onClick={() => {
-                  setProjectType(value);
-                  setTouched(t => ({ ...t, projectType: true }));
-                  setErrors(errs => ({ ...errs, projectType: undefined }));
-                }}
-              >
-                {pt.label}
-              </PillButton>
-            );
-          })}
-        </Flex>
+        <div role="group" aria-label="Project Type">
+          <Flex wrap="wrap" gap="2">
+            {supportedProjectTypes.map(pt => {
+              const value = pt.type.toLowerCase().replace(/ /g, '-');
+              return (
+                <PillButton
+                  key={pt.type}
+                  selected={projectType === value}
+                  onClick={() => {
+                    setProjectType(value);
+                    setTouched(t => ({ ...t, projectType: true }));
+                    setErrors(errs => ({ ...errs, projectType: undefined }));
+                  }}
+                >
+                  {pt.label}
+                </PillButton>
+              );
+            })}
+          </Flex>
+        </div>
         {errors.projectType && touched.projectType && <FieldError message={errors.projectType} />}
       </div>
 
@@ -337,21 +341,23 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
             Select a project type to see available frameworks.
           </Text>
         ) : (
-          <Flex wrap="wrap" gap="2">
-            {currentFrameworkOptions.map(fw => (
-              <PillButton
-                key={fw.value}
-                selected={framework === fw.value}
-                onClick={() => {
-                  setFramework(fw.value);
-                  setTouched(t => ({ ...t, framework: true }));
-                  setErrors(errs => ({ ...errs, framework: undefined }));
-                }}
-              >
-                {fw.label}
-              </PillButton>
-            ))}
-          </Flex>
+          <div role="group" aria-label="Framework">
+            <Flex wrap="wrap" gap="2">
+              {currentFrameworkOptions.map(fw => (
+                <PillButton
+                  key={fw.value}
+                  selected={framework === fw.value}
+                  onClick={() => {
+                    setFramework(fw.value);
+                    setTouched(t => ({ ...t, framework: true }));
+                    setErrors(errs => ({ ...errs, framework: undefined }));
+                  }}
+                >
+                  {fw.label}
+                </PillButton>
+              ))}
+            </Flex>
+          </div>
         )}
         {errors.framework && touched.framework && <FieldError message={errors.framework} />}
       </div>
@@ -360,8 +366,10 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       <div style={card}>
         <SectionLabel number="04" label="Addons" />
         <Flex direction="column" gap="4">
-          {Object.entries(addonOptions).map(([category, opts]) => (
-            <div key={category}>
+          {Object.entries(addonOptions).map(([category, opts]) => {
+            const categoryLabel = category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1);
+            return (
+            <div key={category} role="group" aria-label={categoryLabel}>
               <Text
                 as="p"
                 size="1"
@@ -373,7 +381,7 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
                   marginBottom: 8,
                 }}
               >
-                {category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1)}
+                {categoryLabel}
               </Text>
               <Flex wrap="wrap" gap="2">
                 {opts.map(opt => (
@@ -387,7 +395,8 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
                 ))}
               </Flex>
             </div>
-          ))}
+            );
+          })}
         </Flex>
       </div>
 
@@ -395,7 +404,10 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
       <div style={card}>
         <SectionLabel number="05" label="Docker Support" />
         <Flex align="center" gap="3">
-          <TagChip selected={dockerSupport} onClick={() => setDockerSupport(v => !v)}>
+          <TagChip
+            selected={dockerSupport}
+            onClick={() => setDockerSupport(v => !v)}
+          >
             Generate Dockerfile
           </TagChip>
           <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
@@ -409,10 +421,11 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
         <SectionLabel number="06" label="Project Details" />
         <Flex direction="column" gap="4">
           <div>
-            <Text as="label" size="2" weight="bold" style={fieldLabel}>
+            <Text as="label" htmlFor="field-module-name" size="2" weight="bold" style={fieldLabel}>
               Module Name
             </Text>
             <TextField.Root
+              id="field-module-name"
               placeholder="github.com/your/module"
               value={moduleName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -427,10 +440,11 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
           </div>
           <Flex gap="4" className="form-name-desc-row">
             <div style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={fieldLabel}>
+              <Text as="label" htmlFor="field-project-name" size="2" weight="bold" style={fieldLabel}>
                 Name
               </Text>
               <TextField.Root
+                id="field-project-name"
                 placeholder="my-app"
                 value={name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -444,10 +458,11 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
               {errors.name && touched.name && <FieldError message={errors.name} />}
             </div>
             <div style={{ flex: 1 }}>
-              <Text as="label" size="2" weight="bold" style={fieldLabel}>
+              <Text as="label" htmlFor="field-description" size="2" weight="bold" style={fieldLabel}>
                 Description
               </Text>
               <TextField.Root
+                id="field-description"
                 placeholder="Short project description"
                 value={description}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
