@@ -285,7 +285,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 									pre({ children }) {
 										return <>{children}</>;
 									},
-									code({ className, children, ...props }: React.HTMLAttributes<HTMLElement>) {
+								code({ className, children, node: _node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) {
 										const match = /language-(\w+)/.exec(className || '');
 										const codeStr = String(children).replace(/\n$/, '');
 										const isBlock = !!match || codeStr.includes('\n');
