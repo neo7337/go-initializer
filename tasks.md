@@ -416,7 +416,7 @@ goini new \
   - `addonRegistry` → register `&AIAddonGen{}` under `"ai"` and `&VectorStoreAddonGen{}` under `"vectorstore"`
   - `GeneratorRegistry` → register `&AIAgentGenerator{}` under `"ai-agent"`
 
-- [ ] **T-AI3 — [Backend] Update `CreateProjectRequest` validate tag** — add `ai-agent` to the `oneof` enum in `types.go`: `oneof=microservice simple-project cli-app api-server ai-agent`
+- [x] **T-AI3 — [Backend] Update `CreateProjectRequest` validate tag** — add `ai-agent` to the `oneof` enum in `types.go`: `oneof=microservice simple-project cli-app api-server ai-agent`
 
 ### Phase B — Code Generation Helpers
 > Parallel with each other; depends on Phase A.
