@@ -21,13 +21,16 @@ var GeneratorRegistry = map[string]Generator{
 	"simple-project": &SimpleProjectGenerator{},
 	"microservice":   &MicroserviceGenerator{},
 	"cli-app":        &CLIAppGenerator{},
+	"ai-agent":       &AIAgentGenerator{},
 }
 
 // addonRegistry maps addon category names to their AddonGenerator implementations.
 // To add a new addon category, register it here and add an AddonGenerator implementation.
 var addonRegistry = map[string]AddonGenerator{
-	"cache":    &CacheAddonGen{},
-	"database": &DatabaseAddonGen{},
+	"cache":       &CacheAddonGen{},
+	"database":    &DatabaseAddonGen{},
+	"ai":          &AIAddonGen{},
+	"vectorstore": &VectorStoreAddonGen{},
 }
 
 var SupportedProjectTypesMap = map[string]bool{
@@ -35,6 +38,7 @@ var SupportedProjectTypesMap = map[string]bool{
 	"simple-project": true,
 	"cli-app":        true,
 	"api-server":     true,
+	"ai-agent":       true,
 }
 
 var SupportedProjectTypesLabelsMap = map[string]string{
@@ -42,6 +46,7 @@ var SupportedProjectTypesLabelsMap = map[string]string{
 	"simple-project": "Simple Project",
 	"cli-app":        "CLI Application",
 	"api-server":     "API Server",
+	"ai-agent":       "AI Agent",
 }
 
 var SupportedGoVersionsMap = map[string]bool{
@@ -74,6 +79,12 @@ var SupportedFrameworksMap = map[string]map[string]bool{
 	"simple-project": {
 		"golly": true,
 	},
+	"ai-agent": {
+		"langchaingo": true,
+		"openai":      true,
+		"gemini":      true,
+		"ollama":      true,
+	},
 }
 
 var SupportedAddonsMap = map[string]map[string]bool{
@@ -89,6 +100,17 @@ var SupportedAddonsMap = map[string]map[string]bool{
 		"zap":    true,
 		"logrus": true,
 		"cobra":  true,
+	},
+	"ai": {
+		"openai":      true,
+		"langchaingo": true,
+		"gemini":      true,
+		"ollama":      true,
+	},
+	"vectorstore": {
+		"pgvector": true,
+		"chromem":  true,
+		"qdrant":   true,
 	},
 }
 
@@ -119,4 +141,25 @@ var DependencyMap = map[string][]string{
 	"pgvector":    {"github.com/pgvector/pgvector-go v0.2.2"},
 	"chromem":     {"github.com/philippgille/chromem-go v0.7.0"},
 	"qdrant":      {"github.com/qdrant/go-client v1.13.0"},
+}
+
+// AIAgentGenerator generates an ai-agent project. Implemented in gen_ai_agent.go.
+type AIAgentGenerator struct{}
+
+func (g *AIAgentGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+	return nil, nil // TODO: implemented in gen_ai_agent.go (T-AI9)
+}
+
+// AIAddonGen writes internal/ai/client.go when the "ai" addon is selected.
+type AIAddonGen struct{}
+
+func (a *AIAddonGen) Generate(folderName string, addons []string, zw *zip.Writer) error {
+	return nil // TODO: implemented in gen_ai_addon.go (T-AI10)
+}
+
+// VectorStoreAddonGen writes internal/vectorstore/store.go when the "vectorstore" addon is selected.
+type VectorStoreAddonGen struct{}
+
+func (v *VectorStoreAddonGen) Generate(folderName string, addons []string, zw *zip.Writer) error {
+	return nil // TODO: implemented in gen_ai_addon.go (T-AI11)
 }

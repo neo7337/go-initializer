@@ -408,7 +408,7 @@ goini new \
 
 - [x] **T-AI1 — [Backend] Extend `DependencyMap`** — add versioned entries in `registry.go` for: `langchaingo` (`github.com/tmc/langchaingo`), `openai` (`github.com/openai/openai-go`), `gemini` (`github.com/google/generative-ai-go`), `ollama` (`github.com/ollama/ollama`), `pgvector` (`github.com/pgvector/pgvector-go`), `chromem` (`github.com/philippgille/chromem-go`), `qdrant` (`github.com/qdrant/go-client`)
 
-- [ ] **T-AI2 — [Backend] Extend Supported\* maps and registries** — in `registry.go`:
+- [x] **T-AI2 — [Backend] Extend Supported\* maps and registries** — in `registry.go`:
   - `SupportedProjectTypesMap` → add `"ai-agent": true`
   - `SupportedProjectTypesLabelsMap` → add `"ai-agent": "AI Agent"`
   - `SupportedFrameworksMap` → add `"ai-agent"` key with `langchaingo | openai | gemini | ollama`
