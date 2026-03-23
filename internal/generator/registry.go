@@ -142,5 +142,3 @@ var DependencyMap = map[string][]string{
 	"chromem":     {"github.com/philippgille/chromem-go v0.7.0"},
 	"qdrant":      {"github.com/qdrant/go-client v1.13.0"},
 }
-
-
