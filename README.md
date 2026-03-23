@@ -1,85 +1,153 @@
 # go-initializer
 
-Go Initializer is a modern web-based tool to quickly scaffold Go projects with your preferred project type, Go version, and framework/dependency. It features a beautiful React frontend and is designed for speed and ease of use.
+go-initializer scaffolds production-ready Go projects in seconds — from a terminal or a browser. Pick a project type, framework, and addons, and get a fully wired, immediately runnable codebase dropped into your working directory.
 
-## Features
+---
 
-- Select **Project Type**: Microservice, CLI App, API Server, or Simple Project
-- Choose **Go Version**: 1.22.0 (latest stable), 1.21.7, 1.20.14
-- Pick a **Framework/Dependency** based on project type (e.g., Gin, Echo, Fiber, Cobra, urfave/cli, etc.)
-- Enter project metadata: module name, project name, and description
-- One-click project generation
-- Light/Dark theme toggle
+## Installation
 
-## Usage
+### CLI (recommended)
 
-### Docker Setup (Recommended)
+```sh
+go install github.com/neo7337/go-initializer/cmd/goini@latest
+```
 
-**Production Mode:**
+### Homebrew
+
+```sh
+brew tap neo7337/goini
+brew install goini
+```
+
+### Web UI
+
+The hosted web UI is available at **[https://go-initializer.dev](https://go-initializer.dev)** — no installation required.
+
+---
+
+## Quick Start
+
+### Interactive mode
+
+```sh
+goini new
+```
+
+The CLI walks you through every option step-by-step. Any flag you provide skips its corresponding prompt, making the command fully scriptable.
+
+### Scripted / CI mode
+
+```sh
+goini new \
+  --name        myapp \
+  --module      github.com/acme/myapp \
+  --description "A sample microservice" \
+  --go-version  1.25.0 \
+  --type        microservice \
+  --framework   gin \
+  --addon       cache=redis \
+  --addon       database=gorm \
+  --addon       other=zap \
+  --docker \
+  --output      ./projects/
+```
+
+The project is extracted directly into the output directory — no zip file left on disk.
+
+---
+
+## Commands
+
+```
+goini new                       scaffold a new project (interactive or via flags)
+goini list types                print all supported project types
+goini list frameworks           print frameworks for a type  (--type <t>)
+goini list addons               print all supported addon categories and values
+goini version                   print version and build info
+goini completion bash|zsh|fish  print shell completion script
+```
+
+---
+
+## Supported Options
+
+### Go versions
+
+`1.25.0` · `1.24.6` · `1.23.12`
+
+### Project types & frameworks
+
+| Project Type   | Frameworks                              |
+|----------------|-----------------------------------------|
+| Microservice   | Gin · Echo · Fiber · Golly · Go kit     |
+| API Server     | Gin · Echo · Fiber · Chi · Golly        |
+| CLI App        | Cobra · urfave/cli · Kingpin · Golly    |
+| Simple Project | Golly                                   |
+| AI Agent       | LangChainGo · OpenAI · Gemini · Ollama  |
+
+### Addons
+
+| Category     | Values                                      |
+|--------------|---------------------------------------------|
+| `cache`      | `redis` · `memcached`                       |
+| `database`   | `gorm` · `ent`                              |
+| `other`      | `zap` · `logrus` · `cobra`                  |
+| `ai`         | `openai` · `langchaingo` · `gemini` · `ollama` |
+| `vectorstore`| `pgvector` · `chromem` · `qdrant`           |
+
+---
+
+## What gets generated
+
+Every project includes:
+
+- `go.mod` wired with all selected dependencies
+- Framework-specific `main.go`, handlers, and router
+- `.gitignore` (binaries, `vendor/`, `.env`, IDE dirs)
+- `Makefile` with `build`, `run`, `tidy`, and `test` targets
+- `README.md` with next-step instructions
+- Optional `Dockerfile` (multi-stage) when `--docker` is set
+- Optional addon files: `internal/cache/`, `internal/database/`, `internal/logger/`, `internal/ai/`, `internal/vectorstore/`
+
+### Next steps after generation
+
+```sh
+cd <name>
+go mod tidy
+make run      # server projects
+make build    # CLI projects
+```
+
+---
+
+## Project Structure
+
+```
+go-initializer/
+├── cmd/
+│   ├── goini/          # CLI binary
+│   └── server/         # HTTP server binary
+├── internal/
+│   ├── generator/      # shared generation engine
+│   └── server/         # HTTP layer
+└── frontend/           # React web UI
+```
+
+---
+
+## Docker (self-hosted web UI)
+
 ```sh
 docker-compose up --build
 ```
 
-**Development Mode:**
-```sh
-docker-compose -f docker-compose.dev.yml up --build
-```
+The backend listens on `:8182` and the frontend on `:8001`.
 
-Access the application at [http://localhost:3000](http://localhost:3000)
-
-### Manual Setup
-
-1. **Start the Backend**
-	- Navigate to the `backend` directory:
-	  ```sh
-	  cd backend
-	  go run .
-	  ```
-
-2. **Start the Frontend**
-	- Navigate to the `frontend` directory:
-	  ```sh
-	  cd frontend
-	  npm install
-	  npm start
-	  ```
-	- Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-3. **Fill in the Form**
-	- Select your desired project type, Go version, and framework/dependency.
-	- Enter your module name, project name, and description.
-	- Click **GENERATE** to scaffold your Go project.
-
-## Project Structure
-
-- `frontend/` – React app for the UI (see its README for dev scripts)
-- `backend/` – (To be implemented) Go backend for project generation
-
-## Framework/Dependency Options
-
-Framework options are context-aware and change based on the selected project type:
-
-| Project Type    | Framework/Dependency Options         |
-|-----------------|--------------------------------------|
-| Microservice    | Golly, Gin, Echo, Fiber, Go kit      |
-| CLI App         | Golly, Cobra, urfave/cli, Kingpin    |
-| API Server      | Golly, Gin, Echo, Fiber, Chi         |
-| Simple Project  | Golly                                |
-
-Support various addons to enhance your project:
-
-| Addon           | Description                          |
-|-----------------|--------------------------------------|
-| Logging         | Zap, Logrus, Zerolog                 |
-| Database        | GORM, SQLX, Ent                      |
-| Cache           | Redis                                |
-| Testing         | Testify, Ginkgo                      |
-| Docker          | Dockerfile, Docker Compose           |
-| CI/CD           | GitHub Actions, GitLab CI            |
+---
 
 ## Contributing
 
-Contributions are welcome! Please open issues or pull requests for suggestions and improvements.
+Contributions are welcome! Please open issues or pull requests for suggestions and improvements. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
