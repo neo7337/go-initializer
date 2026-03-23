@@ -406,9 +406,9 @@ goini new \
 
 ### Phase A — Registry & Metadata
 
-- [ ] **T-AI1 — [Backend] Extend `DependencyMap`** — add versioned entries in `registry.go` for: `langchaingo` (`github.com/tmc/langchaingo`), `openai` (`github.com/openai/openai-go`), `gemini` (`github.com/google/generative-ai-go`), `ollama` (`github.com/ollama/ollama`), `pgvector` (`github.com/pgvector/pgvector-go`), `chromem` (`github.com/philippgille/chromem-go`), `qdrant` (`github.com/qdrant/go-client`)
+- [x] **T-AI1 — [Backend] Extend `DependencyMap`** — add versioned entries in `registry.go` for: `langchaingo` (`github.com/tmc/langchaingo`), `openai` (`github.com/openai/openai-go`), `gemini` (`github.com/google/generative-ai-go`), `ollama` (`github.com/ollama/ollama`), `pgvector` (`github.com/pgvector/pgvector-go`), `chromem` (`github.com/philippgille/chromem-go`), `qdrant` (`github.com/qdrant/go-client`)
 
-- [ ] **T-AI2 — [Backend] Extend Supported\* maps and registries** — in `registry.go`:
+- [x] **T-AI2 — [Backend] Extend Supported\* maps and registries** — in `registry.go`:
   - `SupportedProjectTypesMap` → add `"ai-agent": true`
   - `SupportedProjectTypesLabelsMap` → add `"ai-agent": "AI Agent"`
   - `SupportedFrameworksMap` → add `"ai-agent"` key with `langchaingo | openai | gemini | ollama`
@@ -416,24 +416,24 @@ goini new \
   - `addonRegistry` → register `&AIAddonGen{}` under `"ai"` and `&VectorStoreAddonGen{}` under `"vectorstore"`
   - `GeneratorRegistry` → register `&AIAgentGenerator{}` under `"ai-agent"`
 
-- [ ] **T-AI3 — [Backend] Update `CreateProjectRequest` validate tag** — add `ai-agent` to the `oneof` enum in `types.go`: `oneof=microservice simple-project cli-app api-server ai-agent`
+- [x] **T-AI3 — [Backend] Update `CreateProjectRequest` validate tag** — add `ai-agent` to the `oneof` enum in `types.go`: `oneof=microservice simple-project cli-app api-server ai-agent`
 
 ### Phase B — Code Generation Helpers
 > Parallel with each other; depends on Phase A.
 
-- [ ] **T-AI4 — [Backend] Add `GenerateLLMClient(framework string) []byte`** — returns `llm/client.go`; provider-specific initialisation:
+- [x] **T-AI4 — [Backend] Add `GenerateLLMClient(framework string) []byte`** — returns `llm/client.go`; provider-specific initialisation:
   - `langchaingo` — `llms.New()` with provider selection via env var
   - `openai` — `openai.NewClient(os.Getenv("OPENAI_API_KEY"))`
   - `gemini` — `genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))`
   - `ollama` — HTTP client pointing at `OLLAMA_HOST` (default `http://localhost:11434`)
 
-- [ ] **T-AI5 — [Backend] Add `GenerateAgentContent(framework, name string) []byte`** — returns `agent/agent.go`; ReAct-style loop per provider: langchaingo agent executor, openai tool-calling loop, gemini function-calling loop, ollama prompt loop with JSON tool parsing
+- [x] **T-AI5 — [Backend] Add `GenerateAgentContent(framework, name string) []byte`** — returns `agent/agent.go`; ReAct-style loop per provider: langchaingo agent executor, openai tool-calling loop, gemini function-calling loop, ollama prompt loop with JSON tool parsing
 
-- [ ] **T-AI6 — [Backend] Add `GenerateToolsContent(framework string) []byte`** — returns `tools/tools.go`; sample tool stub using the framework's tool interface (`tools.Tool` for langchaingo, `openai.ChatCompletionToolParam` for openai, `genai.FunctionDeclaration` for gemini, JSON schema struct for ollama)
+- [x] **T-AI6 — [Backend] Add `GenerateToolsContent(framework string) []byte`** — returns `tools/tools.go`; sample tool stub using the framework's tool interface (`tools.Tool` for langchaingo, `openai.ChatCompletionToolParam` for openai, `genai.FunctionDeclaration` for gemini, JSON schema struct for ollama)
 
-- [ ] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
+- [x] **T-AI7 — [Backend] Add `GenerateAIAddonContent(provider string) []byte`** — returns `internal/ai/client.go`; thin LLM client wrapper for use when the `ai` addon is selected on any non-`ai-agent` project type
 
-- [ ] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
+- [x] **T-AI8 — [Backend] Add `GenerateVectorStoreContent(store string) []byte`** — returns `internal/vectorstore/store.go`; store-specific setup:
   - `pgvector` — pgx v5 + pgvector-go connection + sample insert/query
   - `chromem` — `chromem.NewPersistentDB` with sample collection create/query
   - `qdrant` — qdrant gRPC client init + sample upsert/search
