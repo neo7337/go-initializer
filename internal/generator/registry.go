@@ -143,23 +143,4 @@ var DependencyMap = map[string][]string{
 	"qdrant":      {"github.com/qdrant/go-client v1.13.0"},
 }
 
-// AIAgentGenerator generates an ai-agent project. Implemented in gen_ai_agent.go.
-type AIAgentGenerator struct{}
 
-func (g *AIAgentGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
-	return nil, nil // TODO: implemented in gen_ai_agent.go (T-AI9)
-}
-
-// AIAddonGen writes internal/ai/client.go when the "ai" addon is selected.
-type AIAddonGen struct{}
-
-func (a *AIAddonGen) Generate(folderName string, addons []string, zw *zip.Writer) error {
-	return nil // TODO: implemented in gen_ai_addon.go (T-AI10)
-}
-
-// VectorStoreAddonGen writes internal/vectorstore/store.go when the "vectorstore" addon is selected.
-type VectorStoreAddonGen struct{}
-
-func (v *VectorStoreAddonGen) Generate(folderName string, addons []string, zw *zip.Writer) error {
-	return nil // TODO: implemented in gen_ai_addon.go (T-AI11)
-}
