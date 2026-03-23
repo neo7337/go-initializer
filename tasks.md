@@ -185,7 +185,7 @@ Supported frameworks: `cobra`, `urfave`, `kingpin`
 ## Phase 8 — Infrastructure & DevX
 > Low complexity. Fix pre-existing infra bugs before the repo restructure begins. No logic changes.
 
-- [ ] **T24 — [Backend] Resolve dead config code** — `config.go` and `loadConfig` are never called; either wire `config.yaml` + call `loadConfig` in `Start()` to drive host/port/timeouts, or delete the dead code
+- [x] **T24 — [Backend] Resolve dead config code** — `config.go` and `loadConfig` are never called; either wire `config.yaml` + call `loadConfig` in `Start()` to drive host/port/timeouts, or delete the dead code
 - [ ] **T25 — [Infra] Fix `docker-compose.yml` port mismatch** — backend server listens on `:8182` and `Dockerfile` exposes `8182`, but `docker-compose.yml` maps `8181:8181`; align all to `8182:8182`
 - [ ] **T25b — [Infra] Fix `REACT_APP_API_URL` not being applied in Docker** — React bakes env vars into the JS bundle at build time, not runtime; the `environment:` block in `docker-compose.yml` is silently ignored; pass `API_BASE_URL` as a Docker `--build-arg` in the frontend service instead
 - [ ] **T25c — [Frontend] Align `/api` prefix across all config** — `frontend/.env` sets `http://localhost:8182/api` but `service.ts` fallback is `http://localhost:8182` (no `/api` prefix); standardise both to `http://localhost:8182/api` so all calls correctly target `/api/generate` and `/api/meta`
@@ -443,11 +443,11 @@ All five helpers added to `internal/generator/gen_utils.go`.
 ### Phase C — Generator & Addon Structs
 > Depends on Phase B.
 
-- [ ] **T-AI9 — [Backend] Create `gen_ai_agent.go`** — `AIAgentGenerator.Generate()` wires all Phase B helpers; always emits `main.go`, `agent/agent.go`, `tools/tools.go`, `llm/client.go`, `go.mod` (via `GenerateGoModV2`), `.gitignore`, `Makefile`, `README.md`; handles `"other"` logging addon inline (same pattern as other generators); handles `"vectorstore"` addon via `GenerateVectorStoreContent`; emits `Dockerfile` when `DockerSupport` is true
+- [x] **T-AI9 — [Backend] Create `gen_ai_agent.go`** — `AIAgentGenerator.Generate()` wires all Phase B helpers; always emits `main.go`, `agent/agent.go`, `tools/tools.go`, `llm/client.go`, `go.mod` (via `GenerateGoModV2`), `.gitignore`, `Makefile`, `README.md`; handles `"other"` logging addon inline (same pattern as other generators); handles `"vectorstore"` addon via `GenerateVectorStoreContent`; emits `Dockerfile` when `DockerSupport` is true
 
-- [ ] **T-AI10 — [Backend] Add `AIAddonGen` struct** — implements `AddonGenerator`; called when the `ai` addon is selected on any project type; writes `GenerateAIAddonContent(provider)` output to `internal/ai/client.go` in the zip
+- [x] **T-AI10 — [Backend] Add `AIAddonGen` struct** — implements `AddonGenerator`; called when the `ai` addon is selected on any project type; writes `GenerateAIAddonContent(provider)` output to `internal/ai/client.go` in the zip
 
-- [ ] **T-AI11 — [Backend] Add `VectorStoreAddonGen` struct** — implements `AddonGenerator`; called when the `vectorstore` addon is selected on any project type; writes `GenerateVectorStoreContent(store)` output to `internal/vectorstore/store.go` in the zip
+- [x] **T-AI11 — [Backend] Add `VectorStoreAddonGen` struct** — implements `AddonGenerator`; called when the `vectorstore` addon is selected on any project type; writes `GenerateVectorStoreContent(store)` output to `internal/vectorstore/store.go` in the zip
 
 `AIAddonGen` and `VectorStoreAddonGen` can be defined inline in `registry.go` or in a dedicated `gen_ai_addon.go`.
 
@@ -552,7 +552,7 @@ On: GitHub Release published
 - [x] **T36 — [Infra] Add `goreleaser.yaml`** — cross-compile `goini` for `darwin/amd64`, `darwin/arm64`, `linux/amd64`, `linux/arm64`; attach binaries to GitHub Releases; include shell completion scripts in archives; configure `brews` block to auto-update the Homebrew formula on each release
 - [x] **T37 — [Infra] Update `.github/workflows/release.yml`** — run `goreleaser release` on GitHub Release event; preserve the existing Docker Hub publish job for the server image (`cmd/server`)
 - [ ] **T38 — [Infra] Create Homebrew tap** — create `github.com/neo7337/homebrew-goini` repository with `Formula/goini.rb`; formula installs the binary and all three shell completion scripts (bash, zsh, fish)
-- [ ] **T39 — [Docs] Update README** — add `go install` one-liner, `brew install` command, `goini new` quick-start example, and a link to the web UI for users who prefer a graphical interface
+- [x] **T39 — [Docs] Update README** — add `go install` one-liner, `brew install` command, `goini new` quick-start example, and a link to the web UI for users who prefer a graphical interface
 
 ---
 
@@ -567,11 +567,11 @@ On: GitHub Release published
 | 5 — `api-server` Generator | T15–T16 | Medium-High | Phase 2 | Open |
 | 6 — `cli-app` Generator | T17–T20 | High | Phase 2 | All done |
 | 7 — Frontend Dynamic UI | T21–T23 | Low-Medium | Phase 1 | All done |
-| 8 — Infrastructure & DevX | T24–T25c | Low | Any | Open |
+| 8 — Infrastructure & DevX | T24–T25c | Low | Any | T24 done; T25/T25b/T25c open |
 | 9 — Repo Restructure | T26–T29 | Medium | Phase 5 + Phase 8 | Open |
 | 10 — `goini` CLI Binary | T30–T35 | High | Phase 9 | Open |
 | 11 — Frontend UI/UX Overhaul | T-UX1–T-UX10 | Medium-High | Phase 1 (stable API) | Open |
-| 12 — AI Agent Capabilities | T-AI1–T-AI11 | High | Phase 2 | Open |
+| 12 — AI Agent Capabilities | T-AI1–T-AI11 | High | Phase 2 | All done |
 | 13 — Distribution & Release | T36–T39 | Low-Medium | Phases 11 + 12 | Open |
 
 ---
