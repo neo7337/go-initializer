@@ -585,7 +585,7 @@ On: GitHub Release published
 ### Phase A — Router & Navigation Foundation
 > Unblocks all other sub-phases. `react-router-dom` v6 is already installed.
 
-- [ ] **T-FE1 — [Frontend] Wrap app in `<BrowserRouter>`** — in `frontend/src/index.tsx`, import `BrowserRouter` from `react-router-dom` and wrap `<App />` with it; no other changes required in this task
+- [x] **T-FE1 — [Frontend] Wrap app in `<BrowserRouter>`** — in `frontend/src/index.tsx`, import `BrowserRouter` from `react-router-dom` and wrap `<App />` with it; no other changes required in this task
 
 - [ ] **T-FE2 — [Frontend] Replace boolean `showExplore` toggle with `<Routes>`** — in `frontend/src/App.tsx`, remove the `showExplore` state and conditional rendering; add `<Routes>` with three `<Route>` entries:
   - `/` → `<HomePage>` (hero + generator form)
