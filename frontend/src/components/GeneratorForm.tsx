@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { TextField, Text, Flex } from '@radix-ui/themes';
 import { useGeneratorForm } from '../hooks/useGeneratorForm';
 import type { AddonCategory } from '../types';
@@ -250,7 +250,7 @@ const fieldLabel: React.CSSProperties = {
 /* ═══════════════════════════════════════════════════════════════════
    GeneratorForm
 ═══════════════════════════════════════════════════════════════════ */
-const GeneratorForm: React.FC = () => {
+const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) => {
   const {
     dockerSupport, setDockerSupport,
     selectedAddons, handleAddonChange,
@@ -274,6 +274,14 @@ const GeneratorForm: React.FC = () => {
     handleGenerate,
   } = useGeneratorForm();
 
+  const hasInteracted = useRef(false);
+  const notifyInteract = useCallback(() => {
+    if (!hasInteracted.current) {
+      hasInteracted.current = true;
+      onInteract?.();
+    }
+  }, [onInteract]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} role="form" aria-label="Project generator">
 
@@ -287,6 +295,7 @@ const GeneratorForm: React.FC = () => {
                 key={ver.version}
                 selected={goVersion === ver.version}
                 onClick={() => {
+                  notifyInteract();
                   setGoVersion(ver.version);
                   setTouched(t => ({ ...t, goVersion: true }));
                   setErrors(errs => ({ ...errs, goVersion: undefined }));
@@ -312,6 +321,7 @@ const GeneratorForm: React.FC = () => {
                   key={pt.type}
                   selected={projectType === value}
                   onClick={() => {
+                    notifyInteract();
                     setProjectType(value);
                     setTouched(t => ({ ...t, projectType: true }));
                     setErrors(errs => ({ ...errs, projectType: undefined }));
@@ -341,6 +351,7 @@ const GeneratorForm: React.FC = () => {
                   key={fw.value}
                   selected={framework === fw.value}
                   onClick={() => {
+                    notifyInteract();
                     setFramework(fw.value);
                     setTouched(t => ({ ...t, framework: true }));
                     setErrors(errs => ({ ...errs, framework: undefined }));
@@ -381,7 +392,7 @@ const GeneratorForm: React.FC = () => {
                   <TagChip
                     key={opt.value}
                     selected={selectedAddons[category]?.includes(opt.value) ?? false}
-                    onClick={() => handleAddonChange(category as AddonCategory, opt.value)}
+                    onClick={() => { notifyInteract(); handleAddonChange(category as AddonCategory, opt.value); }}
                   >
                     {opt.label}
                   </TagChip>
@@ -399,7 +410,7 @@ const GeneratorForm: React.FC = () => {
         <Flex align="center" gap="3">
           <TagChip
             selected={dockerSupport}
-            onClick={() => setDockerSupport(v => !v)}
+            onClick={() => { notifyInteract(); setDockerSupport(v => !v); }}
           >
             Generate Dockerfile
           </TagChip>
@@ -422,6 +433,7 @@ const GeneratorForm: React.FC = () => {
               placeholder="github.com/your/module"
               value={moduleName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                notifyInteract();
                 setModuleName(e.target.value);
                 setTouched(t => ({ ...t, moduleName: true }));
                 setErrors(errs => ({ ...errs, moduleName: e.target.value.trim() ? undefined : 'Module Name is required.' }));
@@ -441,6 +453,7 @@ const GeneratorForm: React.FC = () => {
                 placeholder="my-app"
                 value={name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  notifyInteract();
                   setName(e.target.value);
                   setTouched(t => ({ ...t, name: true }));
                   setErrors(errs => ({ ...errs, name: e.target.value.trim() ? undefined : 'Name is required.' }));
@@ -459,6 +472,7 @@ const GeneratorForm: React.FC = () => {
                 placeholder="Short project description"
                 value={description}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  notifyInteract();
                   setDescription(e.target.value);
                   setTouched(t => ({ ...t, description: true }));
                   setErrors(errs => ({ ...errs, description: e.target.value.trim() ? undefined : 'Description is required.' }));

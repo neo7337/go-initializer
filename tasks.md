@@ -600,18 +600,18 @@ On: GitHub Release published
 ### Phase B — Home Page with Collapsing Hero
 > Parallel with Phase C after T-FE2 is done.
 
-- [ ] **T-FE4 — [Frontend] Create `frontend/src/pages/HomePage.tsx`** — new page component that holds `<HeroSection>` and `<GeneratorForm>` vertically; manages `formInteracted: boolean` state (initially `false`); passes `formInteracted` down to `<HeroSection>` and an `onInteract` callback down to `<GeneratorForm>`; wraps output in `.main-centered` container
+- [x] **T-FE4 — [Frontend] Create `frontend/src/pages/HomePage.tsx`** — new page component that holds `<HeroSection>` and `<GeneratorForm>` vertically; manages `formInteracted: boolean` state (initially `false`); passes `formInteracted` down to `<HeroSection>` and an `onInteract` callback down to `<GeneratorForm>`; wraps output in `.main-centered` container
 
-- [ ] **T-FE5 — [Frontend] Create `frontend/src/components/HeroSection.tsx`** — standalone component that accepts `collapsed: boolean` prop; renders:
+- [x] **T-FE5 — [Frontend] Create `frontend/src/components/HeroSection.tsx`** — standalone component that accepts `collapsed: boolean` prop; renders:
   - Headline: "Scaffold production-ready Go projects in seconds" with the word "Go" in `--color-accent`
   - Sub-headline: one-sentence tagline ("Choose a type, pick a framework, generate. No boilerplate, no repetition.")
   - Feature grid (2×2 on desktop, 1-column on mobile): four cards — "5 Project Types", "9 Frameworks", "Addons & Docker", "CLI + Web UI" — each with an inline SVG icon and a one-line description
   - Two CTA buttons: "Open Generator ↓" (scrolls/focuses the form below) and "View CLI Guide →" (navigates to `/cli`)
   - Collapses via `max-height` CSS transition to `0` when `collapsed` is `true`; uses `overflow: hidden` and `transition: max-height 0.4s ease, opacity 0.4s ease`
 
-- [ ] **T-FE6 — [Frontend] Add `onInteract` callback to `GeneratorForm`** — add an optional `onInteract?: () => void` prop; fire it exactly once (use a `hasInteracted` ref to guard) on the first of: any pill `onClick`, any `TagChip` toggle, or any text `onChange` inside the form; this triggers hero collapse in `HomePage` without altering any existing form logic
+- [x] **T-FE6 — [Frontend] Add `onInteract` callback to `GeneratorForm`** — add an optional `onInteract?: () => void` prop; fire it exactly once (use a `hasInteracted` ref to guard) on the first of: any pill `onClick`, any `TagChip` toggle, or any text `onChange` inside the form; this triggers hero collapse in `HomePage` without altering any existing form logic
 
-- [ ] **T-FE7 — [Frontend] Add hero CSS to `App.css`** — add the following classes:
+- [x] **T-FE7 — [Frontend] Add hero CSS to `App.css`** — add the following classes:
   - `.hero-section` — `padding: 4rem 1rem 2rem; text-align: center; max-height: 800px; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease`
   - `.hero-section--collapsed` — `max-height: 0; opacity: 0; padding: 0; pointer-events: none`
   - `.hero-headline` — `font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.02em; color: var(--color-text-primary)`
