@@ -395,10 +395,27 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
           </div>
         </div>
 
+        {/* AI Agent contextual banner */}
+        {projectType === 'ai-agent' && (
+          <div className="ai-agent-form-banner">
+            <div className="ai-agent-form-banner-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+                <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
+              </svg>
+            </div>
+            <div className="ai-agent-form-banner-body">
+              <strong>AI Agent selected</strong> — the Framework picker below shows your LLM provider
+              (LangChainGo, OpenAI, Gemini, Ollama). Add a vector store in Addons for RAG support.
+            </div>
+          </div>
+        )}
+
         {/* 03 — Framework */}
         <div className="form-card">
-          <SectionLabel number="03" label="Framework / Dependency" icon={<PlugIcon2 />} />
-          <p className="section-desc">Choose the HTTP or CLI framework to use</p>
+          <SectionLabel number="03" label={projectType === 'ai-agent' ? 'LLM Provider' : 'Framework / Dependency'} icon={<PlugIcon2 />} />
+          <p className="section-desc">{projectType === 'ai-agent' ? 'LLM provider for your AI agent' : 'Choose the HTTP or CLI framework to use'}</p>
           {!currentFrameworkOptions.length ? (
             <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
               Select a project type to see available frameworks.

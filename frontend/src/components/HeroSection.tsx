@@ -32,7 +32,7 @@ const TerminalIcon = () => (
 );
 
 const BrainIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
         <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
         <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
@@ -42,6 +42,33 @@ const BrainIcon = () => (
         <path d="M19.938 10.5a4 4 0 0 1 .585.396" />
         <path d="M6 18a4 4 0 0 1-1.967-.516" />
         <path d="M19.967 17.484A4 4 0 0 1 18 18" />
+    </svg>
+);
+
+const ZapIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+);
+
+const WorkflowIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="6" height="6" rx="1" />
+        <rect x="15" y="3" width="6" height="6" rx="1" />
+        <rect x="9" y="15" width="6" height="6" rx="1" />
+        <path d="M6 9v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9" />
+        <line x1="12" y1="12" x2="12" y2="15" />
+    </svg>
+);
+
+const VectorIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="6" cy="6" r="2" />
+        <circle cx="18" cy="6" r="2" />
+        <circle cx="12" cy="18" r="2" />
+        <line x1="8" y1="6" x2="16" y2="6" />
+        <line x1="7" y1="7.5" x2="11" y2="16.5" />
+        <line x1="17" y1="7.5" x2="13" y2="16.5" />
     </svg>
 );
 
@@ -86,8 +113,76 @@ const HeroSection: React.FC = () => {
 
             <p className="hero-sub">
                 Choose a type, pick a framework, generate.{' '}
-                No boilerplate, no repetition.
+                From REST APIs to production-ready{' '}
+                <span className="hero-sub-accent">AI agent workflows</span>{' '}
+                — zero boilerplate.
             </p>
+
+            {/* AI Agent Spotlight */}
+            <div className="ai-spotlight">
+                {/* Glow orb */}
+                <div className="ai-spotlight-glow" aria-hidden="true" />
+
+                <div className="ai-spotlight-header">
+                    <div className="ai-spotlight-header-left">
+                        <div className="ai-spotlight-icon-wrap">
+                            <BrainIcon />
+                        </div>
+                        <div>
+                            <div className="ai-spotlight-badge">
+                                <span className="ai-spotlight-badge-dot" aria-hidden="true" />
+                                New &nbsp;&middot;&nbsp; AI Agent
+                            </div>
+                            <strong className="ai-spotlight-title">
+                                Build LLM-powered Go agents in seconds
+                            </strong>
+                            <p className="ai-spotlight-desc">
+                                Generate a fully-wired AI agent project — provider client, tool loop, vector store —
+                                ready to integrate with any orchestration framework or workflow automation platform.
+                            </p>
+                        </div>
+                    </div>
+                    <button className="ai-spotlight-cta" onClick={() => navigate('/generate')}>
+                        Try AI Agent →
+                    </button>
+                </div>
+
+                {/* 3-column capability grid */}
+                <div className="ai-capability-grid">
+                    <div className="ai-capability-item">
+                        <span className="ai-capability-icon"><ZapIcon /></span>
+                        <div>
+                            <strong className="ai-capability-title">4 LLM Providers</strong>
+                            <p className="ai-capability-desc">LangChainGo, OpenAI, Gemini, Ollama — swap with one line.</p>
+                        </div>
+                    </div>
+                    <div className="ai-capability-item">
+                        <span className="ai-capability-icon"><VectorIcon /></span>
+                        <div>
+                            <strong className="ai-capability-title">Vector Store RAG</strong>
+                            <p className="ai-capability-desc">pgvector, Qdrant, or chromem — pre-wired retrieval pipeline.</p>
+                        </div>
+                    </div>
+                    <div className="ai-capability-item">
+                        <span className="ai-capability-icon"><WorkflowIcon /></span>
+                        <div>
+                            <strong className="ai-capability-title">Workflow Ready</strong>
+                            <p className="ai-capability-desc">Drop into Temporal, Asynq, n8n, or any HTTP pipeline.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Provider chips */}
+                <div className="ai-spotlight-chips">
+                    <span className="ai-chip">LangChainGo</span>
+                    <span className="ai-chip">OpenAI</span>
+                    <span className="ai-chip">Gemini</span>
+                    <span className="ai-chip">Ollama</span>
+                    <span className="ai-chip ai-chip--dim">pgvector</span>
+                    <span className="ai-chip ai-chip--dim">Qdrant</span>
+                    <span className="ai-chip ai-chip--dim">chromem</span>
+                </div>
+            </div>
 
             <div className="hero-features">
                 {FEATURES.map(f => (
@@ -99,39 +194,6 @@ const HeroSection: React.FC = () => {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* AI Agent Spotlight */}
-            <div className="ai-spotlight">
-                <div className="ai-spotlight-badge">
-                    <span className="ai-spotlight-badge-dot" aria-hidden="true" />
-                    AI Agent &nbsp;&middot;&nbsp; Workflow Ready
-                </div>
-                <div className="ai-spotlight-body">
-                    <div className="ai-spotlight-left">
-                        <span className="ai-spotlight-icon" aria-hidden="true"><BrainIcon /></span>
-                        <div>
-                            <strong className="ai-spotlight-title">Built for LLM Workflows</strong>
-                            <p className="ai-spotlight-desc">
-                                Scaffold production-ready AI agent projects wired to your
-                                LLM provider — ready to plug into any orchestration pipeline
-                                or workflow automation system.
-                            </p>
-                            <div className="ai-spotlight-chips">
-                                <span className="ai-chip">LangChainGo</span>
-                                <span className="ai-chip">OpenAI</span>
-                                <span className="ai-chip">Gemini</span>
-                                <span className="ai-chip">Ollama</span>
-                                <span className="ai-chip ai-chip--dim">pgvector</span>
-                                <span className="ai-chip ai-chip--dim">Qdrant</span>
-                                <span className="ai-chip ai-chip--dim">chromem</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button className="ai-spotlight-cta" onClick={() => navigate('/generate')}>
-                        Try AI Agent →
-                    </button>
-                </div>
             </div>
 
             <div className="hero-actions">
