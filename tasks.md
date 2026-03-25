@@ -635,7 +635,7 @@ On: GitHub Release published
   4. After all steps complete, show a "▶ Replay" button that resets state and re-runs the animation
   - Renders terminal chrome: a title bar with three coloured dots (red `#ff5f57`, yellow `#febc2e`, green `#28c840`) and a monospace title; the body is a dark scrollable area
 
-- [ ] **T-FE9 — [Frontend] Create `frontend/src/pages/CLIPage.tsx`** — new page with four sections:
+- [x] **T-FE9 — [Frontend] Create `frontend/src/pages/CLIPage.tsx`** — new page with four sections:
   1. **Hero strip** — `<h1>goini CLI</h1>` + two-sentence description; inline-block install command (`go install github.com/neo7337/go-initializer/cmd/goini@latest`) in a `.terminal-window` code block with a copy button
   2. **Terminal demo** — `<TerminalDemo>` with these three steps:
      - `goini list types` → output: the four project type names
