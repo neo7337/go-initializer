@@ -1085,3 +1085,157 @@
 .success-progress-bar {
   animation: success-countdown 5s linear forwards;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CLI Page  (T-FE10)
+═══════════════════════════════════════════════════════════════ */
+
+.cli-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+.cli-page-section {
+  margin-bottom: 3.5rem;
+}
+
+.cli-page-section h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+}
+
+/* ── Terminal window chrome ──────────────────────────────────── */
+
+.terminal-window {
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.625rem 1rem;
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.terminal-body {
+  padding: 1.25rem 1.5rem;
+  font-family: 'Geist Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.terminal-prompt {
+  color: var(--color-accent);
+  user-select: none;
+}
+
+.terminal-cmd {
+  color: var(--color-text-primary);
+}
+
+.terminal-output {
+  color: var(--color-text-muted);
+  display: block;
+  white-space: pre;
+}
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  background: var(--color-accent);
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: blink 1s step-start infinite;
+}
+
+/* ── CLI flags reference table ───────────────────────────────── */
+
+.cli-flags-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: var(--color-surface-1);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.cli-flags-table thead tr {
+  background: var(--color-surface-2);
+}
+
+.cli-flags-table th {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cli-flags-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  vertical-align: top;
+}
+
+.cli-flags-table td code {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius-sm);
+}
+
+.cli-flags-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cli-flags-table tbody tr:hover {
+  background: var(--color-surface-2);
+}
+
+/* ── CLI page responsive ─────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .cli-page {
+    padding: 2rem 1rem;
+  }
+  .terminal-body {
+    padding: 1rem;
+    font-size: 0.8125rem;
+  }
+  .cli-flags-table th,
+  .cli-flags-table td {
+    padding: 0.5rem 0.75rem;
+  }
+}

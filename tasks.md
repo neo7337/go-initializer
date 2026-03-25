@@ -644,7 +644,7 @@ On: GitHub Release published
   3. **Flags reference table** — clean `<table>` listing every `goini new` flag (name, type, description) matching the flags defined in Phase 10 (T32)
   4. **CTA strip** — "Try it in the Web UI →" button that navigates to `/`
 
-- [ ] **T-FE10 — [Frontend] Add CLI page CSS to `App.css`** — add:
+- [x] **T-FE10 — [Frontend] Add CLI page CSS to `App.css`** — add:
   - `.cli-page` — `max-width: 900px; margin: 0 auto; padding: 3rem 1rem`
   - `.cli-page-section` — `margin-bottom: 3.5rem`
   - `.cli-page-section h2` — section heading style
