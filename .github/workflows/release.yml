@@ -1,7 +1,9 @@
 name: Release App
 
 on:
-    workflow_dispatch: # disabled: re-enable by restoring `release: types: [published]`
+    release:
+        types: [published]
+    workflow_dispatch:
 
 jobs:
     # Step 1: Detect which folders have changed
@@ -116,8 +118,9 @@ jobs:
             - name: Log out from Docker Hub
               run: docker logout
 
-    # Step 4: Cross-compile goini and publish to GitHub Release + Homebrew tap
+    # Step 4: Cross-compile goini and publish to GitHub Release + Homebrew tap (paused)
     release-cli:
+        if: false # paused — re-enable when CLI release is ready
         runs-on: ubuntu-latest
         permissions:
             contents: write
