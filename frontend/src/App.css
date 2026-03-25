@@ -232,6 +232,37 @@
   margin: 0 auto;
 }
 
+/* ── Generator two-column layout ────────────────────────────── */
+.generator-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+.generator-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Go Version + Project Type side-by-side within the left column */
+.generator-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.generator-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 80px; /* clears the sticky header */
+  min-width: 0;
+}
+
 /* Slim footer */
 .app-footer {
   background: var(--color-surface-0);
@@ -1074,6 +1105,15 @@
   .explore-toc {
     display: none;
   }
+
+  /* Collapse generator to single column on tablet */
+  .generator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .generator-right {
+    position: static;
+  }
 }
 
 /* ── Responsive: Mobile (< 768 px) ────────────────────────────── */
@@ -1096,6 +1136,11 @@
   /* Name + Description pair stacks vertically */
   .form-name-desc-row {
     flex-direction: column !important;
+  }
+
+  /* Collapse top-grid (Go Version + Project Type) to single column */
+  .generator-top-grid {
+    grid-template-columns: 1fr;
   }
 
   /* Explore: show drawer toggle + overlay + slide-in sidebar */

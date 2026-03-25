@@ -56,16 +56,12 @@ const FEATURES = [
 ];
 
 /* ── Component ──────────────────────────────────────────────── */
-interface HeroSectionProps {
-    collapsed: boolean;
-    onOpenGenerator: () => void;
-}
 
-const HeroSection: React.FC<HeroSectionProps> = ({ collapsed, onOpenGenerator }) => {
+const HeroSection: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <section className={`hero-section${collapsed ? ' hero-section--collapsed' : ''}`} aria-label="Introduction">
+        <section className="hero-section" aria-label="Introduction">
             <p className="hero-eyebrow">Go project scaffolding, done right</p>
 
             <h1 className="hero-headline">
@@ -92,8 +88,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ collapsed, onOpenGenerator })
             </div>
 
             <div className="hero-actions">
-                <button className="hero-btn-primary" onClick={onOpenGenerator}>
-                    Open Generator ↓
+                <button className="hero-btn-primary" onClick={() => navigate('/generate')}>
+                    Open Generator →
                 </button>
                 <button className="hero-btn-secondary" onClick={() => navigate('/cli')}>
                     View CLI Guide →

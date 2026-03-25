@@ -3,6 +3,7 @@ import { Theme } from '@radix-ui/themes';
 import { Routes, Route, Navigate, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import Explore from './components/Explore';
 import HomePage from './pages/HomePage';
+import GeneratorPage from './pages/GeneratorPage';
 import CLIPage from './pages/CLIPage';
 
 const SunIcon = () => (
@@ -71,6 +72,12 @@ function App() {
 
                             <nav className="header-nav" aria-label="Main navigation">
                                 <NavLink
+                                    to="/generate"
+                                    className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
+                                >
+                                    Generate
+                                </NavLink>
+                                <NavLink
                                     to="/docs"
                                     className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
                                 >
@@ -110,6 +117,7 @@ function App() {
                 <main className={`app-main${isDocsRoute ? ' app-main--explore' : ''}`} aria-label={isDocsRoute ? 'Documentation' : 'Project generator'}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
+                        <Route path="/generate" element={<GeneratorPage />} />
                         <Route path="/docs" element={<Explore onBack={() => navigate('/')} />} />
                         <Route path="/cli" element={<CLIPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />

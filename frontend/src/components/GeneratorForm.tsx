@@ -332,176 +332,169 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
   }, [onInteract]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} role="form" aria-label="Project generator">
+    <div className="generator-layout" role="form" aria-label="Project generator">
 
-      {/* 01 — Go Version */}
-      <div className="form-card">
-        <SectionLabel number="01" label="Go Version" icon={<TagIcon />} />
-        <p className="section-desc">Select the Go runtime version for your project</p>
-        <div role="group" aria-label="Go Version">
-          <Flex wrap="wrap" gap="2">
-            {goVersionOptions.map(ver => (
-              <PillButton
-                key={ver.version}
-                selected={goVersion === ver.version}
-                onClick={() => {
-                  notifyInteract();
-                  setGoVersion(ver.version);
-                  setTouched(t => ({ ...t, goVersion: true }));
-                  setErrors(errs => ({ ...errs, goVersion: undefined }));
-                }}
-              >
-                {ver.label}
-              </PillButton>
-            ))}
-          </Flex>
+      {/* ── Left column: type selectors ─────────────────────────── */}
+      <div className="generator-left">
+
+        {/* Top 2-col grid: Go Version + Project Type */}
+        <div className="generator-top-grid">
+
+          {/* 01 — Go Version */}
+          <div className="form-card">
+            <SectionLabel number="01" label="Go Version" icon={<TagIcon />} />
+            <p className="section-desc">Go runtime version</p>
+            <div role="group" aria-label="Go Version">
+              <Flex wrap="wrap" gap="2">
+                {goVersionOptions.map(ver => (
+                  <PillButton
+                    key={ver.version}
+                    selected={goVersion === ver.version}
+                    onClick={() => {
+                      notifyInteract();
+                      setGoVersion(ver.version);
+                      setTouched(t => ({ ...t, goVersion: true }));
+                      setErrors(errs => ({ ...errs, goVersion: undefined }));
+                    }}
+                  >
+                    {ver.label}
+                  </PillButton>
+                ))}
+              </Flex>
+            </div>
+            {errors.goVersion && touched.goVersion && <FieldError message={errors.goVersion} />}
+          </div>
+
+          {/* 02 — Project Type */}
+          <div className="form-card">
+            <SectionLabel number="02" label="Project Type" icon={<LayersIcon2 />} />
+            <p className="section-desc">Kind of Go application</p>
+            <div role="group" aria-label="Project Type">
+              <Flex wrap="wrap" gap="2">
+                {supportedProjectTypes.map(pt => {
+                  const value = pt.type.toLowerCase().replace(/ /g, '-');
+                  return (
+                    <PillButton
+                      key={pt.type}
+                      selected={projectType === value}
+                      onClick={() => {
+                        notifyInteract();
+                        setProjectType(value);
+                        setTouched(t => ({ ...t, projectType: true }));
+                        setErrors(errs => ({ ...errs, projectType: undefined }));
+                      }}
+                    >
+                      {pt.label}
+                    </PillButton>
+                  );
+                })}
+              </Flex>
+            </div>
+            {errors.projectType && touched.projectType && <FieldError message={errors.projectType} />}
+          </div>
         </div>
-        {errors.goVersion && touched.goVersion && <FieldError message={errors.goVersion} />}
-      </div>
 
-      {/* 02 — Project Type */}
-      <div className="form-card">
-        <SectionLabel number="02" label="Project Type" icon={<LayersIcon2 />} />
-        <p className="section-desc">What kind of Go application do you want to scaffold?</p>
-        <div role="group" aria-label="Project Type">
-          <Flex wrap="wrap" gap="2">
-            {supportedProjectTypes.map(pt => {
-              const value = pt.type.toLowerCase().replace(/ /g, '-');
+        {/* 03 — Framework */}
+        <div className="form-card">
+          <SectionLabel number="03" label="Framework / Dependency" icon={<PlugIcon2 />} />
+          <p className="section-desc">Choose the HTTP or CLI framework to use</p>
+          {!currentFrameworkOptions.length ? (
+            <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
+              Select a project type to see available frameworks.
+            </Text>
+          ) : (
+            <div key={projectType} role="group" aria-label="Framework" className="framework-options-fade">
+              <Flex wrap="wrap" gap="2">
+                {currentFrameworkOptions.map(fw => (
+                  <PillButton
+                    key={fw.value}
+                    selected={framework === fw.value}
+                    onClick={() => {
+                      notifyInteract();
+                      setFramework(fw.value);
+                      setTouched(t => ({ ...t, framework: true }));
+                      setErrors(errs => ({ ...errs, framework: undefined }));
+                    }}
+                  >
+                    {fw.label}
+                  </PillButton>
+                ))}
+              </Flex>
+            </div>
+          )}
+          {errors.framework && touched.framework && <FieldError message={errors.framework} />}
+        </div>
+
+        {/* 04 — Addons */}
+        <div className="form-card">
+          <SectionLabel number="04" label="Addons" icon={<PuzzleIcon2 />} />
+          <p className="section-desc">Optional libraries to include (cache, database, logging)</p>
+          <Flex direction="column" gap="4">
+            {Object.entries(addonOptions).map(([category, opts]) => {
+              const categoryLabel = category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1);
               return (
-                <PillButton
-                  key={pt.type}
-                  selected={projectType === value}
-                  onClick={() => {
-                    notifyInteract();
-                    setProjectType(value);
-                    setTouched(t => ({ ...t, projectType: true }));
-                    setErrors(errs => ({ ...errs, projectType: undefined }));
-                  }}
-                >
-                  {pt.label}
-                </PillButton>
+                <div key={category} role="group" aria-label={categoryLabel}>
+                  <Text
+                    as="p"
+                    size="1"
+                    weight="bold"
+                    style={{
+                      color: 'var(--color-text-muted)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.07em',
+                      marginBottom: 8,
+                    }}
+                  >
+                    {categoryLabel}
+                  </Text>
+                  <Flex wrap="wrap" gap="2">
+                    {opts.map(opt => (
+                      <TagChip
+                        key={opt.value}
+                        selected={selectedAddons[category]?.includes(opt.value) ?? false}
+                        onClick={() => { notifyInteract(); handleAddonChange(category as AddonCategory, opt.value); }}
+                      >
+                        {opt.label}
+                      </TagChip>
+                    ))}
+                  </Flex>
+                </div>
               );
             })}
           </Flex>
         </div>
-        {errors.projectType && touched.projectType && <FieldError message={errors.projectType} />}
       </div>
 
-      {/* 03 — Framework */}
-      <div className="form-card">
-        <SectionLabel number="03" label="Framework / Dependency" icon={<PlugIcon2 />} />
-        <p className="section-desc">Choose the HTTP or CLI framework to use</p>
-        {!currentFrameworkOptions.length ? (
-          <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
-            Select a project type to see available frameworks.
-          </Text>
-        ) : (
-          <div key={projectType} role="group" aria-label="Framework" className="framework-options-fade">
-            <Flex wrap="wrap" gap="2">
-              {currentFrameworkOptions.map(fw => (
-                <PillButton
-                  key={fw.value}
-                  selected={framework === fw.value}
-                  onClick={() => {
-                    notifyInteract();
-                    setFramework(fw.value);
-                    setTouched(t => ({ ...t, framework: true }));
-                    setErrors(errs => ({ ...errs, framework: undefined }));
-                  }}
-                >
-                  {fw.label}
-                </PillButton>
-              ))}
-            </Flex>
-          </div>
-        )}
-        {errors.framework && touched.framework && <FieldError message={errors.framework} />}
-      </div>
+      {/* ── Right column: details + action (sticky) ─────────────── */}
+      <div className="generator-right">
 
-      {/* 04 — Addons */}
-      <div className="form-card">
-        <SectionLabel number="04" label="Addons" icon={<PuzzleIcon2 />} />
-        <p className="section-desc">Optional libraries to include (cache, database, logging)</p>
-        <Flex direction="column" gap="4">
-          {Object.entries(addonOptions).map(([category, opts]) => {
-            const categoryLabel = category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1);
-            return (
-            <div key={category} role="group" aria-label={categoryLabel}>
-              <Text
-                as="p"
-                size="1"
-                weight="bold"
-                style={{
-                  color: 'var(--color-text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.07em',
-                  marginBottom: 8,
-                }}
-              >
-                {categoryLabel}
+        {/* 05 — Project Details */}
+        <div className="form-card">
+          <SectionLabel number="05" label="Project Details" icon={<FileIcon />} />
+          <p className="section-desc">Name and module path for your new project</p>
+          <Flex direction="column" gap="3">
+            <div>
+              <Text as="label" htmlFor="field-module-name" size="2" weight="bold" style={fieldLabel}>
+                Module Name
               </Text>
-              <Flex wrap="wrap" gap="2">
-                {opts.map(opt => (
-                  <TagChip
-                    key={opt.value}
-                    selected={selectedAddons[category]?.includes(opt.value) ?? false}
-                    onClick={() => { notifyInteract(); handleAddonChange(category as AddonCategory, opt.value); }}
-                  >
-                    {opt.label}
-                  </TagChip>
-                ))}
-              </Flex>
+              <TextField.Root
+                id="field-module-name"
+                placeholder="github.com/your/module"
+                value={moduleName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  notifyInteract();
+                  setModuleName(e.target.value);
+                  setTouched(t => ({ ...t, moduleName: true }));
+                  setErrors(errs => ({ ...errs, moduleName: e.target.value.trim() ? undefined : 'Module Name is required.' }));
+                }}
+                onBlur={() => setTouched(t => ({ ...t, moduleName: true }))}
+                color={errors.moduleName && touched.moduleName ? 'red' : undefined}
+              />
+              {errors.moduleName && touched.moduleName && <FieldError message={errors.moduleName} />}
             </div>
-            );
-          })}
-        </Flex>
-      </div>
-
-      {/* 05 — Docker Support */}
-      <div className="form-card">
-        <SectionLabel number="05" label="Docker Support" icon={<BoxIcon />} />
-        <p className="section-desc">Generate a multi-stage production Dockerfile</p>
-        <Flex align="center" gap="3">
-          <TagChip
-            selected={dockerSupport}
-            onClick={() => { notifyInteract(); setDockerSupport(v => !v); }}
-          >
-            Generate Dockerfile
-          </TagChip>
-          <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
-            Multi-stage production Dockerfile
-          </Text>
-        </Flex>
-      </div>
-
-      {/* 06 — Project Details */}
-      <div className="form-card">
-        <SectionLabel number="06" label="Project Details" icon={<FileIcon />} />
-        <p className="section-desc">Name and module path for your new project</p>
-        <Flex direction="column" gap="4">
-          <div>
-            <Text as="label" htmlFor="field-module-name" size="2" weight="bold" style={fieldLabel}>
-              Module Name
-            </Text>
-            <TextField.Root
-              id="field-module-name"
-              placeholder="github.com/your/module"
-              value={moduleName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                notifyInteract();
-                setModuleName(e.target.value);
-                setTouched(t => ({ ...t, moduleName: true }));
-                setErrors(errs => ({ ...errs, moduleName: e.target.value.trim() ? undefined : 'Module Name is required.' }));
-              }}
-              onBlur={() => setTouched(t => ({ ...t, moduleName: true }))}
-              color={errors.moduleName && touched.moduleName ? 'red' : undefined}
-            />
-            {errors.moduleName && touched.moduleName && <FieldError message={errors.moduleName} />}
-          </div>
-          <Flex gap="4" className="form-name-desc-row">
-            <div style={{ flex: 1 }}>
+            <div>
               <Text as="label" htmlFor="field-project-name" size="2" weight="bold" style={fieldLabel}>
-                Name
+                Project Name
               </Text>
               <TextField.Root
                 id="field-project-name"
@@ -518,7 +511,7 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
               />
               {errors.name && touched.name && <FieldError message={errors.name} />}
             </div>
-            <div style={{ flex: 1 }}>
+            <div>
               <Text as="label" htmlFor="field-description" size="2" weight="bold" style={fieldLabel}>
                 Description
               </Text>
@@ -538,62 +531,74 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
               {errors.description && touched.description && <FieldError message={errors.description} />}
             </div>
           </Flex>
-        </Flex>
-      </div>
+        </div>
 
-      {/* Generate Button */}
-      <button
-        type="button"
-        className="generate-btn"
-        disabled={isGenerating}
-        onClick={handleGenerate}
-        aria-label={`Generate project${isMac ? ' (⌘↵)' : ' (Ctrl+↵)'}`}
-        style={{
-          width: '100%',
-          padding: '0.9rem 1.5rem',
-          borderRadius: 'var(--radius-md)',
-          border: 'none',
-          background: isGenerating ? 'var(--color-surface-3)' : 'var(--color-accent)',
-          color: isGenerating ? 'var(--color-text-muted)' : '#000000',
-          fontSize: 15,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          cursor: isGenerating ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          transition: 'background 0.15s, color 0.15s',
-          fontFamily: 'inherit',
-          boxShadow: isGenerating ? 'none' : '0 0 0 1px rgba(255,215,0,0.3), var(--shadow-sm)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {isGenerating ? (
-          <>
-            <Spinner />
-            GENERATING…
-          </>
-        ) : (
-          <>
-            GENERATE
-            <span style={{ opacity: 0.55, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em' }}>
-              {isMac ? '⌘↵' : 'Ctrl+↵'}
-            </span>
-          </>
+        {/* 06 — Docker Support */}
+        <div className="form-card">
+          <SectionLabel number="06" label="Docker Support" icon={<BoxIcon />} />
+          <p className="section-desc">Multi-stage production Dockerfile</p>
+          <TagChip
+            selected={dockerSupport}
+            onClick={() => { notifyInteract(); setDockerSupport(v => !v); }}
+          >
+            Generate Dockerfile
+          </TagChip>
+        </div>
+
+        {/* Generate Button */}
+        <button
+          type="button"
+          className="generate-btn"
+          disabled={isGenerating}
+          onClick={handleGenerate}
+          aria-label={`Generate project${isMac ? ' (⌘↵)' : ' (Ctrl+↵)'}`}
+          style={{
+            width: '100%',
+            padding: '0.9rem 1.5rem',
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            background: isGenerating ? 'var(--color-surface-3)' : 'var(--color-accent)',
+            color: isGenerating ? 'var(--color-text-muted)' : '#000000',
+            fontSize: 15,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            transition: 'background 0.15s, color 0.15s',
+            fontFamily: 'inherit',
+            boxShadow: isGenerating ? 'none' : '0 0 0 1px rgba(255,215,0,0.3), var(--shadow-sm)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {isGenerating ? (
+            <>
+              <Spinner />
+              GENERATING…
+            </>
+          ) : (
+            <>
+              GENERATE
+              <span style={{ opacity: 0.55, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em' }}>
+                {isMac ? '⌘↵' : 'Ctrl+↵'}
+              </span>
+            </>
+          )}
+        </button>
+
+        {/* Terminal-style error banner */}
+        {generateError && (
+          <ErrorBanner message={generateError} onDismiss={() => setGenerateError(null)} />
         )}
-      </button>
 
-      {/* Terminal-style error banner */}
-      {generateError && (
-        <ErrorBanner message={generateError} onDismiss={() => setGenerateError(null)} />
-      )}
-
-      {/* Success banner with animated checkmark + countdown progress bar */}
-      {generateSuccess && (
-        <SuccessBanner countdown={successCountdown} onDismiss={() => setGenerateSuccess(false)} />
-      )}
+        {/* Success banner with animated checkmark + countdown progress bar */}
+        {generateSuccess && (
+          <SuccessBanner countdown={successCountdown} onDismiss={() => setGenerateSuccess(false)} />
+        )}
+      </div>
     </div>
   );
 };
