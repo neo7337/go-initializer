@@ -385,6 +385,7 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
                       }}
                     >
                       {pt.label}
+                      {value === 'ai-agent' && <span className="pill-ai-badge">AI</span>}
                     </PillButton>
                   );
                 })}

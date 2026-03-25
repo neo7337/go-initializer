@@ -31,6 +31,20 @@ const TerminalIcon = () => (
     </svg>
 );
 
+const BrainIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+        <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+        <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
+        <path d="M17.599 6.5a3 3 0 0 0 .399-1.375" />
+        <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5" />
+        <path d="M3.477 10.896a4 4 0 0 1 .585-.396" />
+        <path d="M19.938 10.5a4 4 0 0 1 .585.396" />
+        <path d="M6 18a4 4 0 0 1-1.967-.516" />
+        <path d="M19.967 17.484A4 4 0 0 1 18 18" />
+    </svg>
+);
+
 /* ── Feature data ───────────────────────────────────────────── */
 const FEATURES = [
     {
@@ -85,6 +99,39 @@ const HeroSection: React.FC = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* AI Agent Spotlight */}
+            <div className="ai-spotlight">
+                <div className="ai-spotlight-badge">
+                    <span className="ai-spotlight-badge-dot" aria-hidden="true" />
+                    AI Agent &nbsp;&middot;&nbsp; Workflow Ready
+                </div>
+                <div className="ai-spotlight-body">
+                    <div className="ai-spotlight-left">
+                        <span className="ai-spotlight-icon" aria-hidden="true"><BrainIcon /></span>
+                        <div>
+                            <strong className="ai-spotlight-title">Built for LLM Workflows</strong>
+                            <p className="ai-spotlight-desc">
+                                Scaffold production-ready AI agent projects wired to your
+                                LLM provider — ready to plug into any orchestration pipeline
+                                or workflow automation system.
+                            </p>
+                            <div className="ai-spotlight-chips">
+                                <span className="ai-chip">LangChainGo</span>
+                                <span className="ai-chip">OpenAI</span>
+                                <span className="ai-chip">Gemini</span>
+                                <span className="ai-chip">Ollama</span>
+                                <span className="ai-chip ai-chip--dim">pgvector</span>
+                                <span className="ai-chip ai-chip--dim">Qdrant</span>
+                                <span className="ai-chip ai-chip--dim">chromem</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button className="ai-spotlight-cta" onClick={() => navigate('/generate')}>
+                        Try AI Agent →
+                    </button>
+                </div>
             </div>
 
             <div className="hero-actions">
