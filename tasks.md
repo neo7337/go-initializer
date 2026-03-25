@@ -628,7 +628,7 @@ On: GitHub Release published
 ### Phase C — CLI Showcase Page (`/cli`)
 > Parallel with Phase B after T-FE2 is done.
 
-- [ ] **T-FE8 — [Frontend] Create `frontend/src/components/TerminalDemo.tsx`** — self-contained animated terminal component; accepts a `steps: {command: string; output: string[]}[]` prop; uses `useEffect` + `useRef` intervals to:
+- [x] **T-FE8 — [Frontend] Create `frontend/src/components/TerminalDemo.tsx`** — self-contained animated terminal component; accepts a `steps: {command: string; output: string[]}[]` prop; uses `useEffect` + `useRef` intervals to:
   1. Type the command character-by-character (15 ms per char) with a blinking cursor (`|`) appended during typing
   2. After command is fully typed, pause 400 ms then reveal output lines one-by-one (120 ms each)
   3. After last output line, pause 800 ms then move to the next step
