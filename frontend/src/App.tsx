@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Theme } from '@radix-ui/themes';
+import { Routes, Route, Navigate, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import Explore from './components/Explore';
-import GeneratorForm from './components/GeneratorForm';
+import HomePage from './pages/HomePage';
+import GeneratorPage from './pages/GeneratorPage';
+import CLIPage from './pages/CLIPage';
 
 const SunIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -40,7 +43,9 @@ function getInitialTheme(): string {
 
 function App() {
     const [theme, setTheme] = useState(getInitialTheme);
-    const [showExplore, setShowExplore] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isDocsRoute = location.pathname.startsWith('/docs');
 
     useEffect(() => {
         document.body.setAttribute('data-theme', theme);
@@ -51,18 +56,41 @@ function App() {
 
     return (
         <Theme appearance={theme === 'dark' ? 'dark' : 'light'}>
-            <div className={`app-shell${showExplore ? ' app-shell--locked' : ''}`}>
+            <div className={`app-shell${isDocsRoute ? ' app-shell--locked' : ''}`}>
                 {/* Sticky header with backdrop-blur */}
                 <header className="app-header">
                     <div className="header-inner">
-                        <button
-                            className="logo-wordmark"
-                            onClick={() => setShowExplore(false)}
-                            aria-label="Go Initializer – go to home"
-                            title="Go home"
-                        >
-                            <span className="logo-go">go</span><span className="logo-accent">initializer</span>
-                        </button>
+                        <div className="header-left">
+                            <Link
+                                className="logo-wordmark"
+                                to="/"
+                                aria-label="Go Initializer – go to home"
+                                title="Go home"
+                            >
+                                <span className="logo-go">go</span><span className="logo-accent">initializer</span>
+                            </Link>
+
+                            <nav className="header-nav" aria-label="Main navigation">
+                                <NavLink
+                                    to="/generate"
+                                    className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
+                                >
+                                    Generate
+                                </NavLink>
+                                <NavLink
+                                    to="/docs"
+                                    className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
+                                >
+                                    Docs
+                                </NavLink>
+                                <NavLink
+                                    to="/cli"
+                                    className={({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`}
+                                >
+                                    CLI
+                                </NavLink>
+                            </nav>
+                        </div>
 
                         <div className="header-actions">
                             <button
@@ -86,14 +114,14 @@ function App() {
                 </header>
 
                 {/* Main content */}
-                <main className={`app-main${showExplore ? ' app-main--explore' : ''}`} aria-label={showExplore ? 'Documentation' : 'Project generator'}>
-                    {showExplore ? (
-                        <Explore onBack={() => setShowExplore(false)} />
-                    ) : (
-                        <div className="main-centered">
-                            <GeneratorForm onExplore={() => setShowExplore(true)} />
-                        </div>
-                    )}
+                <main className={`app-main${isDocsRoute ? ' app-main--explore' : ''}`} aria-label={isDocsRoute ? 'Documentation' : 'Project generator'}>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/generate" element={<GeneratorPage />} />
+                        <Route path="/docs" element={<Explore onBack={() => navigate('/')} />} />
+                        <Route path="/cli" element={<CLIPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
                 </main>
 
                 {/* Slim footer */}

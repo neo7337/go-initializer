@@ -570,9 +570,146 @@ On: GitHub Release published
 | 8 — Infrastructure & DevX | T24–T25c | Low | Any | T24 done; T25/T25b/T25c open |
 | 9 — Repo Restructure | T26–T29 | Medium | Phase 5 + Phase 8 | Open |
 | 10 — `goini` CLI Binary | T30–T35 | High | Phase 9 | Open |
-| 11 — Frontend UI/UX Overhaul | T-UX1–T-UX10 | Medium-High | Phase 1 (stable API) | Open |
+| 11 — Frontend UI/UX Overhaul | T-UX1–T-UX10 | Medium-High | Phase 1 (stable API) | All done |
 | 12 — AI Agent Capabilities | T-AI1–T-AI11 | High | Phase 2 | All done |
 | 13 — Distribution & Release | T36–T39 | Low-Medium | Phases 11 + 12 | Open |
+| 14 — Frontend Showcase & Routing | T-FE1–T-FE18 | Medium-High | Phase 11 | Open |
+
+---
+
+## Phase 14 — Frontend Showcase & Routing
+> Medium-high complexity. Adds multi-page routing, a collapsing hero section, an animated CLI terminal demo page, generator form section polish, and a redesigned docs/explore view. All new work builds on the existing design system tokens from Phase 11. Depends on Phase 11 being complete.
+
+---
+
+### Phase A — Router & Navigation Foundation
+> Unblocks all other sub-phases. `react-router-dom` v6 is already installed.
+
+- [x] **T-FE1 — [Frontend] Wrap app in `<BrowserRouter>`** — in `frontend/src/index.tsx`, import `BrowserRouter` from `react-router-dom` and wrap `<App />` with it; no other changes required in this task
+
+- [x] **T-FE2 — [Frontend] Replace boolean `showExplore` toggle with `<Routes>`** — in `frontend/src/App.tsx`, remove the `showExplore` state and conditional rendering; add `<Routes>` with three `<Route>` entries:
+  - `/` → `<HomePage>` (hero + generator form)
+  - `/docs` → `<Explore>`
+  - `/cli` → `<CLIPage>`
+  - `*` → redirect to `/` (catch-all)
+
+- [x] **T-FE3 — [Frontend] Convert header nav to `<NavLink>` items** — replace the "Docs" `<button>` in `App.tsx` header with `<NavLink to="/docs">Docs</NavLink>`; add `<NavLink to="/cli">CLI</NavLink>` alongside it; convert the logo wordmark `<button>` to `<Link to="/">`; update `.nav-link--active` CSS to match React Router's `isActive` class (NavLink adds `active` class by default — either add `.nav-link.active` rule or use `className` prop with `({isActive}) => ...`)
+
+---
+
+### Phase B — Home Page with Collapsing Hero
+> Parallel with Phase C after T-FE2 is done.
+
+- [x] **T-FE4 — [Frontend] Create `frontend/src/pages/HomePage.tsx`** — new page component that holds `<HeroSection>` and `<GeneratorForm>` vertically; manages `formInteracted: boolean` state (initially `false`); passes `formInteracted` down to `<HeroSection>` and an `onInteract` callback down to `<GeneratorForm>`; wraps output in `.main-centered` container
+
+- [x] **T-FE5 — [Frontend] Create `frontend/src/components/HeroSection.tsx`** — standalone component that accepts `collapsed: boolean` prop; renders:
+  - Headline: "Scaffold production-ready Go projects in seconds" with the word "Go" in `--color-accent`
+  - Sub-headline: one-sentence tagline ("Choose a type, pick a framework, generate. No boilerplate, no repetition.")
+  - Feature grid (2×2 on desktop, 1-column on mobile): four cards — "5 Project Types", "9 Frameworks", "Addons & Docker", "CLI + Web UI" — each with an inline SVG icon and a one-line description
+  - Two CTA buttons: "Open Generator ↓" (scrolls/focuses the form below) and "View CLI Guide →" (navigates to `/cli`)
+  - Collapses via `max-height` CSS transition to `0` when `collapsed` is `true`; uses `overflow: hidden` and `transition: max-height 0.4s ease, opacity 0.4s ease`
+
+- [x] **T-FE6 — [Frontend] Add `onInteract` callback to `GeneratorForm`** — add an optional `onInteract?: () => void` prop; fire it exactly once (use a `hasInteracted` ref to guard) on the first of: any pill `onClick`, any `TagChip` toggle, or any text `onChange` inside the form; this triggers hero collapse in `HomePage` without altering any existing form logic
+
+- [x] **T-FE7 — [Frontend] Add hero CSS to `App.css`** — add the following classes:
+  - `.hero-section` — `padding: 4rem 1rem 2rem; text-align: center; max-height: 800px; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease`
+  - `.hero-section--collapsed` — `max-height: 0; opacity: 0; padding: 0; pointer-events: none`
+  - `.hero-headline` — `font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.02em; color: var(--color-text-primary)`
+  - `.hero-headline-accent` — `color: var(--color-accent)`
+  - `.hero-sub` — `font-size: 1.1rem; color: var(--color-text-secondary); margin: 0.75rem auto 2rem; max-width: 560px`
+  - `.hero-features` — `display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 640px; margin: 0 auto 2.5rem`
+  - `.hero-feature-card` — `background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; display: flex; gap: 0.75rem; align-items: flex-start; text-align: left`
+  - `.hero-actions` — `display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap`
+  - `.hero-btn-primary` — filled accent gold button
+  - `.hero-btn-secondary` — ghost/outline button
+
+---
+
+### Phase C — CLI Showcase Page (`/cli`)
+> Parallel with Phase B after T-FE2 is done.
+
+- [x] **T-FE8 — [Frontend] Create `frontend/src/components/TerminalDemo.tsx`** — self-contained animated terminal component; accepts a `steps: {command: string; output: string[]}[]` prop; uses `useEffect` + `useRef` intervals to:
+  1. Type the command character-by-character (15 ms per char) with a blinking cursor (`|`) appended during typing
+  2. After command is fully typed, pause 400 ms then reveal output lines one-by-one (120 ms each)
+  3. After last output line, pause 800 ms then move to the next step
+  4. After all steps complete, show a "▶ Replay" button that resets state and re-runs the animation
+  - Renders terminal chrome: a title bar with three coloured dots (red `#ff5f57`, yellow `#febc2e`, green `#28c840`) and a monospace title; the body is a dark scrollable area
+
+- [x] **T-FE9 — [Frontend] Create `frontend/src/pages/CLIPage.tsx`** — new page with four sections:
+  1. **Hero strip** — `<h1>goini CLI</h1>` + two-sentence description; inline-block install command (`go install github.com/neo7337/go-initializer/cmd/goini@latest`) in a `.terminal-window` code block with a copy button
+  2. **Terminal demo** — `<TerminalDemo>` with these three steps:
+     - `goini list types` → output: the four project type names
+     - `goini list frameworks --type microservice` → output: gin, echo, fiber, chi, golly
+     - `goini new --type microservice --name my-svc --module github.com/acme/my-svc --framework gin --docker` → multi-line "Generating…" + success output
+  3. **Flags reference table** — clean `<table>` listing every `goini new` flag (name, type, description) matching the flags defined in Phase 10 (T32)
+  4. **CTA strip** — "Try it in the Web UI →" button that navigates to `/`
+
+- [x] **T-FE10 — [Frontend] Add CLI page CSS to `App.css`** — add:
+  - `.cli-page` — `max-width: 900px; margin: 0 auto; padding: 3rem 1rem`
+  - `.cli-page-section` — `margin-bottom: 3.5rem`
+  - `.cli-page-section h2` — section heading style
+  - `.terminal-window` — `background: var(--color-surface-0); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden`
+  - `.terminal-titlebar` — `display: flex; align-items: center; gap: 6px; padding: 0.625rem 1rem; background: var(--color-surface-2); border-bottom: 1px solid var(--color-border)`
+  - `.terminal-dot` — `width: 12px; height: 12px; border-radius: 50%`
+  - `.terminal-body` — `padding: 1.25rem 1.5rem; font-family: 'Geist Mono', monospace; font-size: 0.875rem; line-height: 1.7`
+  - `.terminal-prompt` — `color: var(--color-accent)` (the `$` prefix)
+  - `.terminal-cmd` — `color: var(--color-text-primary)`
+  - `.terminal-output` — `color: var(--color-text-muted)`
+  - `.terminal-cursor` — blinking `|` cursor via CSS `@keyframes blink`
+  - `.cli-flags-table` — styled table matching `.docs-content table` look
+
+---
+
+### Phase D — Generator Form Polish
+> Parallel with Phases B and C; touches only `GeneratorForm.tsx` and `App.css`.
+
+- [x] **T-FE11 — [Frontend] Add inline SVG icons to `SectionLabel`** — in `GeneratorForm.tsx`, update the `SectionLabel` component to accept an optional `icon: React.ReactNode` prop and render it between the number badge and the label text; pass section-specific SVG icons (all inline, no external library):
+  - 01 Go Version — tag/version icon
+  - 02 Project Type — layers/stack icon
+  - 03 Framework — plug/module icon
+  - 04 Add-ons — puzzle-piece icon
+  - 05 Docker — container/box icon
+  - 06 Details — document/id-card icon
+
+- [x] **T-FE12 — [Frontend] Add one-line descriptions under section headers** — in each form card, render a `<p className="section-desc">` immediately below the `<SectionLabel>` with a brief description:
+  - 01 → "Select the Go runtime version for your project"
+  - 02 → "What kind of Go application do you want to scaffold?"
+  - 03 → "Choose the HTTP or CLI framework to use"
+  - 04 → "Optional libraries to include (cache, database, logging)"
+  - 05 → "Generate a multi-stage production Dockerfile"
+  - 06 → "Name and module path for your new project"
+  Add `.section-desc { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem; }` to `App.css`
+
+- [x] **T-FE13 — [Frontend] Shimmer-glow animation on generate button** — in `App.css`, add a `@keyframes btn-shimmer` animation that moves a semi-transparent highlight across the button; apply it on `.generate-btn:not(:disabled):hover` using a `::after` pseudo-element with `background: linear-gradient(...)` and `animation: btn-shimmer 0.6s ease-out forwards`; ensure the button keeps `position: relative; overflow: hidden`
+
+---
+
+### Phase E — Docs / Explore View Redesign
+> Parallel with Phases B–D.
+
+- [x] **T-FE14 — [Frontend] Add sidebar search/filter** — in `Explore.tsx`, add a controlled `<input type="search">` at the top of the sidebar (above the group tree); store its value in `sidebarQuery` state; filter displayed pages by checking `page.title.toLowerCase().includes(query)` — any group with at least one matching page remains visible, showing only matching pages; if a group has all pages filtered out, hide the group entirely; add `.explore-search` CSS: `width: 100%; padding: 0.5rem 0.75rem; background: var(--color-surface-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text-primary); font-size: 0.875rem`
+
+- [x] **T-FE15 — [Frontend] Add page-count badges to sidebar groups** — next to each group label in the collapsible toggle, render a small `<span className="group-badge">{pages.length}</span>`; CSS: `font-size: 0.7rem; background: var(--color-surface-3); border-radius: 9999px; padding: 1px 7px; color: var(--color-text-muted); margin-left: auto`; when search is active, show the count of matching pages instead of total
+
+- [x] **T-FE16 — [Frontend] Add right-side table of contents (ToC) panel** — in `Explore.tsx`, after markdown content is fetched, parse H2 and H3 headings from the raw markdown string using a regex (`/^#{2,3} (.+)/gm`); store as `tocItems: {level: 2|3; text: string; id: string}[]` (slugify text for `id`); render a `<aside className="explore-toc">` to the right of `.explore-content-scroll` when `tocItems.length >= 2`; each item is an `<a href={#id}>` that smoothly scrolls to the heading; add `id` attributes to rendered headings by passing a custom `components.h2` / `components.h3` to `ReactMarkdown`
+
+- [x] **T-FE17 — [Frontend] Highlight active ToC heading on scroll** — in `Explore.tsx`, use `IntersectionObserver` to watch all heading elements in the content pane; when a heading enters the viewport, mark its ToC `<a>` as active (add `.toc-item--active` class with `color: var(--color-accent); font-weight: 600`); clean up the observer on page change
+
+- [x] **T-FE18 — [Frontend] Add Previous / Next page navigation** — at the bottom of the content pane (below `.docs-content`), render a `.docs-pager` row with two buttons: "← Previous" and "Next →"; compute `prevPage` and `nextPage` by flattening all `DocPage` entries from `docsConfig` into a single ordered array and finding the current page's index ± 1; clicking either navigates to that page (update `activePage` state); hide the respective button when at the start or end of the list; CSS: `display: flex; justify-content: space-between; padding: 2rem 0 1rem; border-top: 1px solid var(--color-border); margin-top: 2rem`
+
+---
+
+### Verification
+
+- [x] `npm start` — all three routes (`/`, `/docs`, `/cli`) render without errors
+- [x] Hero collapses smoothly on first form interaction (click any pill or type in a text field)
+- [x] Terminal demo on `/cli` plays through all three steps and shows a "▶ Replay" button
+- [x] Sidebar search on `/docs` filters pages reactively; group badge updates to show match count
+- [x] ToC panel appears on pages with ≥ 2 headings and highlights the active section while scrolling
+- [x] Prev/Next navigation at the bottom of every doc page moves through pages in `docsConfig` order
+- [x] `npm run build` — zero TypeScript errors
+- [x] NavLink active styling highlights the correct item for all three routes
+- [x] Light and dark themes both work on all new sections
 
 ---
 

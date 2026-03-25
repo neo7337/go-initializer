@@ -116,6 +116,16 @@ const docsConfig: DocGroup[] = [
 		],
 	},
 	{
+		group: 'AI & Workflows',
+		pages: [
+			{
+				id: 'ai-agent',
+				title: 'AI Agent Guide',
+				file: '/docs/ai-agent.md',
+			},
+		],
+	},
+	{
 		group: 'Community',
 		pages: [
 			{
