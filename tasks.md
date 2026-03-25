@@ -687,29 +687,29 @@ On: GitHub Release published
 ### Phase E — Docs / Explore View Redesign
 > Parallel with Phases B–D.
 
-- [ ] **T-FE14 — [Frontend] Add sidebar search/filter** — in `Explore.tsx`, add a controlled `<input type="search">` at the top of the sidebar (above the group tree); store its value in `sidebarQuery` state; filter displayed pages by checking `page.title.toLowerCase().includes(query)` — any group with at least one matching page remains visible, showing only matching pages; if a group has all pages filtered out, hide the group entirely; add `.explore-search` CSS: `width: 100%; padding: 0.5rem 0.75rem; background: var(--color-surface-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text-primary); font-size: 0.875rem`
+- [x] **T-FE14 — [Frontend] Add sidebar search/filter** — in `Explore.tsx`, add a controlled `<input type="search">` at the top of the sidebar (above the group tree); store its value in `sidebarQuery` state; filter displayed pages by checking `page.title.toLowerCase().includes(query)` — any group with at least one matching page remains visible, showing only matching pages; if a group has all pages filtered out, hide the group entirely; add `.explore-search` CSS: `width: 100%; padding: 0.5rem 0.75rem; background: var(--color-surface-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text-primary); font-size: 0.875rem`
 
-- [ ] **T-FE15 — [Frontend] Add page-count badges to sidebar groups** — next to each group label in the collapsible toggle, render a small `<span className="group-badge">{pages.length}</span>`; CSS: `font-size: 0.7rem; background: var(--color-surface-3); border-radius: 9999px; padding: 1px 7px; color: var(--color-text-muted); margin-left: auto`; when search is active, show the count of matching pages instead of total
+- [x] **T-FE15 — [Frontend] Add page-count badges to sidebar groups** — next to each group label in the collapsible toggle, render a small `<span className="group-badge">{pages.length}</span>`; CSS: `font-size: 0.7rem; background: var(--color-surface-3); border-radius: 9999px; padding: 1px 7px; color: var(--color-text-muted); margin-left: auto`; when search is active, show the count of matching pages instead of total
 
-- [ ] **T-FE16 — [Frontend] Add right-side table of contents (ToC) panel** — in `Explore.tsx`, after markdown content is fetched, parse H2 and H3 headings from the raw markdown string using a regex (`/^#{2,3} (.+)/gm`); store as `tocItems: {level: 2|3; text: string; id: string}[]` (slugify text for `id`); render a `<aside className="explore-toc">` to the right of `.explore-content-scroll` when `tocItems.length >= 2`; each item is an `<a href={#id}>` that smoothly scrolls to the heading; add `id` attributes to rendered headings by passing a custom `components.h2` / `components.h3` to `ReactMarkdown`
+- [x] **T-FE16 — [Frontend] Add right-side table of contents (ToC) panel** — in `Explore.tsx`, after markdown content is fetched, parse H2 and H3 headings from the raw markdown string using a regex (`/^#{2,3} (.+)/gm`); store as `tocItems: {level: 2|3; text: string; id: string}[]` (slugify text for `id`); render a `<aside className="explore-toc">` to the right of `.explore-content-scroll` when `tocItems.length >= 2`; each item is an `<a href={#id}>` that smoothly scrolls to the heading; add `id` attributes to rendered headings by passing a custom `components.h2` / `components.h3` to `ReactMarkdown`
 
-- [ ] **T-FE17 — [Frontend] Highlight active ToC heading on scroll** — in `Explore.tsx`, use `IntersectionObserver` to watch all heading elements in the content pane; when a heading enters the viewport, mark its ToC `<a>` as active (add `.toc-item--active` class with `color: var(--color-accent); font-weight: 600`); clean up the observer on page change
+- [x] **T-FE17 — [Frontend] Highlight active ToC heading on scroll** — in `Explore.tsx`, use `IntersectionObserver` to watch all heading elements in the content pane; when a heading enters the viewport, mark its ToC `<a>` as active (add `.toc-item--active` class with `color: var(--color-accent); font-weight: 600`); clean up the observer on page change
 
-- [ ] **T-FE18 — [Frontend] Add Previous / Next page navigation** — at the bottom of the content pane (below `.docs-content`), render a `.docs-pager` row with two buttons: "← Previous" and "Next →"; compute `prevPage` and `nextPage` by flattening all `DocPage` entries from `docsConfig` into a single ordered array and finding the current page's index ± 1; clicking either navigates to that page (update `activePage` state); hide the respective button when at the start or end of the list; CSS: `display: flex; justify-content: space-between; padding: 2rem 0 1rem; border-top: 1px solid var(--color-border); margin-top: 2rem`
+- [x] **T-FE18 — [Frontend] Add Previous / Next page navigation** — at the bottom of the content pane (below `.docs-content`), render a `.docs-pager` row with two buttons: "← Previous" and "Next →"; compute `prevPage` and `nextPage` by flattening all `DocPage` entries from `docsConfig` into a single ordered array and finding the current page's index ± 1; clicking either navigates to that page (update `activePage` state); hide the respective button when at the start or end of the list; CSS: `display: flex; justify-content: space-between; padding: 2rem 0 1rem; border-top: 1px solid var(--color-border); margin-top: 2rem`
 
 ---
 
 ### Verification
 
-- [ ] `npm start` — all three routes (`/`, `/docs`, `/cli`) render without errors
-- [ ] Hero collapses smoothly on first form interaction (click any pill or type in a text field)
-- [ ] Terminal demo on `/cli` plays through all three steps and shows a "▶ Replay" button
-- [ ] Sidebar search on `/docs` filters pages reactively; group badge updates to show match count
-- [ ] ToC panel appears on pages with ≥ 2 headings and highlights the active section while scrolling
-- [ ] Prev/Next navigation at the bottom of every doc page moves through pages in `docsConfig` order
-- [ ] `npm run build` — zero TypeScript errors
-- [ ] NavLink active styling highlights the correct item for all three routes
-- [ ] Light and dark themes both work on all new sections
+- [x] `npm start` — all three routes (`/`, `/docs`, `/cli`) render without errors
+- [x] Hero collapses smoothly on first form interaction (click any pill or type in a text field)
+- [x] Terminal demo on `/cli` plays through all three steps and shows a "▶ Replay" button
+- [x] Sidebar search on `/docs` filters pages reactively; group badge updates to show match count
+- [x] ToC panel appears on pages with ≥ 2 headings and highlights the active section while scrolling
+- [x] Prev/Next navigation at the bottom of every doc page moves through pages in `docsConfig` order
+- [x] `npm run build` — zero TypeScript errors
+- [x] NavLink active styling highlights the correct item for all three routes
+- [x] Light and dark themes both work on all new sections
 
 ---
 

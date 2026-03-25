@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -7,6 +7,23 @@ import { Button } from '@radix-ui/themes';
 import docsConfig, { DocPage } from '../docsConfig';
 
 const allPages: DocPage[] = docsConfig.flatMap((g) => g.pages);
+
+// Slugify heading text into a URL-safe anchor id
+function slugify(text: string): string {
+	return text
+		.toLowerCase()
+		.replace(/`|\*|_/g, '')
+		.replace(/[^\w\s-]/g, '')
+		.replace(/\s+/g, '-')
+		.replace(/--+/g, '-')
+		.trim();
+}
+
+interface TocItem {
+	level: 2 | 3;
+	text: string;
+	id: string;
+}
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 
@@ -149,6 +166,13 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 	const [loading, setLoading] = useState(true);
 	const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 	const [drawerOpen, setDrawerOpen] = useState(false);
+	// T-FE14: sidebar search
+	const [sidebarQuery, setSidebarQuery] = useState('');
+	// T-FE16/T-FE17: table of contents
+	const [tocItems, setTocItems] = useState<TocItem[]>([]);
+	const [activeTocId, setActiveTocId] = useState('');
+	const contentRef = useRef<HTMLDivElement>(null);
+	const observerRef = useRef<IntersectionObserver | null>(null);
 
 	const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
@@ -158,9 +182,35 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 	const selectedPage = allPages.find((p) => p.id === selectedId)!;
 	const selectedGroup = docsConfig.find((g) => g.pages.some((p) => p.id === selectedId));
 
+	// T-FE18: flat prev/next navigation
+	const currentIndex = allPages.findIndex((p) => p.id === selectedId);
+	const prevPage = currentIndex > 0 ? allPages[currentIndex - 1] : null;
+	const nextPage = currentIndex < allPages.length - 1 ? allPages[currentIndex + 1] : null;
+
+	// T-FE14: filter sidebar groups/pages by query
+	const queryLower = sidebarQuery.toLowerCase().trim();
+	const filteredDocs = docsConfig
+		.map((group) => ({
+			...group,
+			pages: queryLower
+				? group.pages.filter((p) => p.title.toLowerCase().includes(queryLower))
+				: group.pages,
+		}))
+		.filter((group) => group.pages.length > 0);
+
+	const navigateTo = useCallback(
+		(id: string) => {
+			setSelectedId(id);
+			closeDrawer();
+		},
+		[closeDrawer],
+	);
+
 	useEffect(() => {
 		setLoading(true);
 		setContent('');
+		setTocItems([]);
+		setActiveTocId('');
 		fetch(selectedPage.file)
 			.then((res) => {
 				if (!res.ok) throw new Error(`Failed to load ${selectedPage.file}`);
@@ -168,6 +218,17 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 			})
 			.then((text) => {
 				setContent(text);
+				// T-FE16: parse H2/H3 headings for ToC
+				const headingRegex = /^(#{2,3}) (.+)/gm;
+				const items: TocItem[] = [];
+				let match: RegExpExecArray | null;
+				while ((match = headingRegex.exec(text)) !== null) {
+					const level = match[1].length as 2 | 3;
+					const raw = match[2].replace(/`|\*|_/g, '').trim();
+					items.push({ level, text: raw, id: slugify(raw) });
+				}
+				setTocItems(items);
+				if (items.length > 0) setActiveTocId(items[0].id);
 				setLoading(false);
 			})
 			.catch(() => {
@@ -175,6 +236,35 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 				setLoading(false);
 			});
 	}, [selectedPage.file]);
+
+	// T-FE17: IntersectionObserver for active ToC heading
+	useEffect(() => {
+		if (observerRef.current) {
+			observerRef.current.disconnect();
+		}
+		if (!contentRef.current || tocItems.length < 2) return;
+
+		const headings = Array.from(
+			contentRef.current.querySelectorAll<HTMLElement>('h2[id], h3[id]'),
+		);
+		if (!headings.length) return;
+
+		observerRef.current = new IntersectionObserver(
+			(entries) => {
+				const visible = entries.filter((e) => e.isIntersecting);
+				if (visible.length > 0) {
+					setActiveTocId((visible[0].target as HTMLElement).id);
+				}
+			},
+			{ rootMargin: '-64px 0px -55% 0px', threshold: 0 },
+		);
+
+		headings.forEach((h) => observerRef.current!.observe(h));
+
+		return () => {
+			observerRef.current?.disconnect();
+		};
+	}, [content, tocItems]);
 
 	return (
 		<div className="explore-shell">
@@ -198,9 +288,24 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 					</button>
 				</div>
 
+				{/* T-FE14: Search filter input */}
+				<div className="explore-sidebar-search">
+					<input
+						type="search"
+						className="explore-search"
+						placeholder="Filter pages…"
+						value={sidebarQuery}
+						onChange={(e) => setSidebarQuery(e.target.value)}
+						aria-label="Filter documentation pages"
+					/>
+				</div>
+
 				<div className="explore-sidebar-tree">
-					{docsConfig.map((group) => {
+					{filteredDocs.map((group) => {
 						const isCollapsed = !!collapsedGroups[group.group];
+						const originalGroup = docsConfig.find((g) => g.group === group.group)!;
+						// T-FE15: badge shows matching count when querying, total otherwise
+						const badgeCount = queryLower ? group.pages.length : originalGroup.pages.length;
 						return (
 							<div key={group.group} className="explore-group">
 								<button
@@ -215,6 +320,8 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 										{isCollapsed ? <FolderClosedIcon /> : <FolderOpenIcon />}
 									</span>
 									<span className="explore-group-label">{group.group}</span>
+									{/* T-FE15: page-count badge */}
+									<span className="group-badge">{badgeCount}</span>
 								</button>
 
 								<div
@@ -243,6 +350,10 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 							</div>
 						);
 					})}
+
+					{filteredDocs.length === 0 && (
+						<p className="explore-no-results">No pages match "{sidebarQuery}"</p>
+					)}
 				</div>
 
 				<div className="explore-sidebar-footer">
@@ -258,7 +369,7 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 				</div>
 			</nav>
 
-			{/* Main content pane */}
+			{/* Main content pane — flex row to accommodate right-side ToC */}
 			<main className="explore-content" aria-label="Documentation content">
 				<div className="explore-content-scroll">
 					<div className="explore-topbar">
@@ -278,14 +389,14 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 					{loading ? (
 						<SkeletonLoader />
 					) : (
-						<div className="docs-content">
+						<div className="docs-content" ref={contentRef}>
 							<ReactMarkdown
 								remarkPlugins={[remarkGfm]}
 								components={{
 									pre({ children }) {
 										return <>{children}</>;
 									},
-								code({ className, children, node: _node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) {
+									code({ className, children, node: _node, ...props }: React.HTMLAttributes<HTMLElement> & { node?: unknown }) {
 										const match = /language-(\w+)/.exec(className || '');
 										const codeStr = String(children).replace(/\n$/, '');
 										const isBlock = !!match || codeStr.includes('\n');
@@ -294,13 +405,76 @@ const Explore: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 										}
 										return <code className={className} {...props}>{children}</code>;
 									},
+									// T-FE16: inject id attributes on h2/h3 for ToC anchors
+									h2({ children, ...props }) {
+										const text = Array.isArray(children) ? children.join('') : String(children);
+										const id = slugify(text.replace(/`|\*|_/g, ''));
+										return <h2 id={id} {...props}>{children}</h2>;
+									},
+									h3({ children, ...props }) {
+										const text = Array.isArray(children) ? children.join('') : String(children);
+										const id = slugify(text.replace(/`|\*|_/g, ''));
+										return <h3 id={id} {...props}>{children}</h3>;
+									},
 								}}
 							>
 								{content}
 							</ReactMarkdown>
+
+							{/* T-FE18: Previous / Next page navigation */}
+							<div className="docs-pager">
+								{prevPage ? (
+									<button
+										className="docs-pager-btn docs-pager-btn--prev"
+										onClick={() => navigateTo(prevPage.id)}
+									>
+										← {prevPage.title}
+									</button>
+								) : (
+									<span />
+								)}
+								{nextPage ? (
+									<button
+										className="docs-pager-btn docs-pager-btn--next"
+										onClick={() => navigateTo(nextPage.id)}
+									>
+										{nextPage.title} →
+									</button>
+								) : (
+									<span />
+								)}
+							</div>
 						</div>
 					)}
 				</div>
+
+				{/* T-FE16: Right-side Table of Contents */}
+				{tocItems.length >= 2 && !loading && (
+					<aside className="explore-toc" aria-label="Table of contents">
+						<p className="explore-toc-title">On this page</p>
+						<ul className="explore-toc-list">
+							{tocItems.map((item) => (
+								<li
+									key={item.id}
+									className={`explore-toc-item explore-toc-item--h${item.level}`}
+								>
+									<a
+										href={`#${item.id}`}
+										className={`explore-toc-link${activeTocId === item.id ? ' toc-item--active' : ''}`}
+										onClick={(e) => {
+											e.preventDefault();
+											const el = document.getElementById(item.id);
+											el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+											setActiveTocId(item.id);
+										}}
+									>
+										{item.text}
+									</a>
+								</li>
+							))}
+						</ul>
+					</aside>
+				)}
 			</main>
 		</div>
 	);
