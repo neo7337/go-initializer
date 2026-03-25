@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Text, Flex, Button } from '@radix-ui/themes';
+import { TextField, Text, Flex } from '@radix-ui/themes';
 import { useGeneratorForm } from '../hooks/useGeneratorForm';
 import type { AddonCategory } from '../types';
 
@@ -250,7 +250,7 @@ const fieldLabel: React.CSSProperties = {
 /* ═══════════════════════════════════════════════════════════════════
    GeneratorForm
 ═══════════════════════════════════════════════════════════════════ */
-const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
+const GeneratorForm: React.FC = () => {
   const {
     dockerSupport, setDockerSupport,
     selectedAddons, handleAddonChange,
@@ -513,10 +513,6 @@ const GeneratorForm: React.FC<{ onExplore: () => void }> = ({ onExplore }) => {
           </>
         )}
       </button>
-
-      <Button size="3" color="gray" variant="soft" onClick={onExplore} style={{ width: '100%' }}>
-        EXPLORE DOCS
-      </Button>
 
       {/* Terminal-style error banner */}
       {generateError && (

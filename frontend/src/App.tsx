@@ -55,14 +55,26 @@ function App() {
                 {/* Sticky header with backdrop-blur */}
                 <header className="app-header">
                     <div className="header-inner">
-                        <button
-                            className="logo-wordmark"
-                            onClick={() => setShowExplore(false)}
-                            aria-label="Go Initializer – go to home"
-                            title="Go home"
-                        >
-                            <span className="logo-go">go</span><span className="logo-accent">initializer</span>
-                        </button>
+                        <div className="header-left">
+                            <button
+                                className="logo-wordmark"
+                                onClick={() => setShowExplore(false)}
+                                aria-label="Go Initializer – go to home"
+                                title="Go home"
+                            >
+                                <span className="logo-go">go</span><span className="logo-accent">initializer</span>
+                            </button>
+
+                            <nav className="header-nav" aria-label="Main navigation">
+                                <button
+                                    className={`nav-link${showExplore ? ' nav-link--active' : ''}`}
+                                    onClick={() => setShowExplore(true)}
+                                    aria-current={showExplore ? 'page' : undefined}
+                                >
+                                    Docs
+                                </button>
+                            </nav>
+                        </div>
 
                         <div className="header-actions">
                             <button
@@ -91,7 +103,7 @@ function App() {
                         <Explore onBack={() => setShowExplore(false)} />
                     ) : (
                         <div className="main-centered">
-                            <GeneratorForm onExplore={() => setShowExplore(true)} />
+                            <GeneratorForm />
                         </div>
                     )}
                 </main>
