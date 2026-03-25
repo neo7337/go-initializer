@@ -663,7 +663,7 @@ On: GitHub Release published
 ### Phase D — Generator Form Polish
 > Parallel with Phases B and C; touches only `GeneratorForm.tsx` and `App.css`.
 
-- [ ] **T-FE11 — [Frontend] Add inline SVG icons to `SectionLabel`** — in `GeneratorForm.tsx`, update the `SectionLabel` component to accept an optional `icon: React.ReactNode` prop and render it between the number badge and the label text; pass section-specific SVG icons (all inline, no external library):
+- [x] **T-FE11 — [Frontend] Add inline SVG icons to `SectionLabel`** — in `GeneratorForm.tsx`, update the `SectionLabel` component to accept an optional `icon: React.ReactNode` prop and render it between the number badge and the label text; pass section-specific SVG icons (all inline, no external library):
   - 01 Go Version — tag/version icon
   - 02 Project Type — layers/stack icon
   - 03 Framework — plug/module icon
@@ -671,7 +671,7 @@ On: GitHub Release published
   - 05 Docker — container/box icon
   - 06 Details — document/id-card icon
 
-- [ ] **T-FE12 — [Frontend] Add one-line descriptions under section headers** — in each form card, render a `<p className="section-desc">` immediately below the `<SectionLabel>` with a brief description:
+- [x] **T-FE12 — [Frontend] Add one-line descriptions under section headers** — in each form card, render a `<p className="section-desc">` immediately below the `<SectionLabel>` with a brief description:
   - 01 → "Select the Go runtime version for your project"
   - 02 → "What kind of Go application do you want to scaffold?"
   - 03 → "Choose the HTTP or CLI framework to use"
@@ -680,7 +680,7 @@ On: GitHub Release published
   - 06 → "Name and module path for your new project"
   Add `.section-desc { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem; }` to `App.css`
 
-- [ ] **T-FE13 — [Frontend] Shimmer-glow animation on generate button** — in `App.css`, add a `@keyframes btn-shimmer` animation that moves a semi-transparent highlight across the button; apply it on `.generate-btn:not(:disabled):hover` using a `::after` pseudo-element with `background: linear-gradient(...)` and `animation: btn-shimmer 0.6s ease-out forwards`; ensure the button keeps `position: relative; overflow: hidden`
+- [x] **T-FE13 — [Frontend] Shimmer-glow animation on generate button** — in `App.css`, add a `@keyframes btn-shimmer` animation that moves a semi-transparent highlight across the button; apply it on `.generate-btn:not(:disabled):hover` using a `::after` pseudo-element with `background: linear-gradient(...)` and `animation: btn-shimmer 0.6s ease-out forwards`; ensure the button keeps `position: relative; overflow: hidden`
 
 ---
 

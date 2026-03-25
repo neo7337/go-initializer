@@ -75,7 +75,7 @@ const TagChip: React.FC<TagChipProps> = ({ selected, onClick, children }) => (
 );
 
 /* ── Numbered section label ─────────────────────────────────────── */
-const SectionLabel: React.FC<{ number: string; label: string }> = ({ number, label }) => (
+const SectionLabel: React.FC<{ number: string; label: string; icon?: React.ReactNode }> = ({ number, label, icon }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
     <span style={{
       fontFamily: 'monospace',
@@ -87,6 +87,11 @@ const SectionLabel: React.FC<{ number: string; label: string }> = ({ number, lab
     }}>
       {number}
     </span>
+    {icon && (
+      <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)', flexShrink: 0 }}>
+        {icon}
+      </span>
+    )}
     <span style={{
       fontSize: 12,
       fontWeight: 700,
@@ -97,6 +102,50 @@ const SectionLabel: React.FC<{ number: string; label: string }> = ({ number, lab
       {label}
     </span>
   </div>
+);
+
+/* ── Section icons (inline SVG, 14×14) ─────────────────────────── */
+const TagIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+    <line x1="7" y1="7" x2="7.01" y2="7" />
+  </svg>
+);
+const LayersIcon2 = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+    <polyline points="2 17 12 22 22 17" />
+    <polyline points="2 12 12 17 22 12" />
+  </svg>
+);
+const PlugIcon2 = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M18 6L6 18" /><path d="M7 17l-5 5" /><path d="M17 7l5-5" />
+    <path d="M8 6v5a4 4 0 0 0 8 0V6" />
+  </svg>
+);
+const PuzzleIcon2 = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5l6.74-6.76z" />
+    <line x1="16" y1="8" x2="2" y2="22" />
+    <line x1="17" y1="15" x2="9" y2="15" />
+  </svg>
+);
+const BoxIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+    <line x1="12" y1="22.08" x2="12" y2="12" />
+  </svg>
+);
+const FileIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
+  </svg>
 );
 
 /* ── Terminal error banner ─────────────────────────────────────── */
@@ -287,7 +336,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 01 — Go Version */}
       <div className="form-card">
-        <SectionLabel number="01" label="Go Version" />
+        <SectionLabel number="01" label="Go Version" icon={<TagIcon />} />
+        <p className="section-desc">Select the Go runtime version for your project</p>
         <div role="group" aria-label="Go Version">
           <Flex wrap="wrap" gap="2">
             {goVersionOptions.map(ver => (
@@ -311,7 +361,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 02 — Project Type */}
       <div className="form-card">
-        <SectionLabel number="02" label="Project Type" />
+        <SectionLabel number="02" label="Project Type" icon={<LayersIcon2 />} />
+        <p className="section-desc">What kind of Go application do you want to scaffold?</p>
         <div role="group" aria-label="Project Type">
           <Flex wrap="wrap" gap="2">
             {supportedProjectTypes.map(pt => {
@@ -338,7 +389,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 03 — Framework */}
       <div className="form-card">
-        <SectionLabel number="03" label="Framework / Dependency" />
+        <SectionLabel number="03" label="Framework / Dependency" icon={<PlugIcon2 />} />
+        <p className="section-desc">Choose the HTTP or CLI framework to use</p>
         {!currentFrameworkOptions.length ? (
           <Text size="2" style={{ color: 'var(--color-text-muted)' }}>
             Select a project type to see available frameworks.
@@ -368,7 +420,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 04 — Addons */}
       <div className="form-card">
-        <SectionLabel number="04" label="Addons" />
+        <SectionLabel number="04" label="Addons" icon={<PuzzleIcon2 />} />
+        <p className="section-desc">Optional libraries to include (cache, database, logging)</p>
         <Flex direction="column" gap="4">
           {Object.entries(addonOptions).map(([category, opts]) => {
             const categoryLabel = category === 'other' ? 'Other Libraries' : category.charAt(0).toUpperCase() + category.slice(1);
@@ -406,7 +459,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 05 — Docker Support */}
       <div className="form-card">
-        <SectionLabel number="05" label="Docker Support" />
+        <SectionLabel number="05" label="Docker Support" icon={<BoxIcon />} />
+        <p className="section-desc">Generate a multi-stage production Dockerfile</p>
         <Flex align="center" gap="3">
           <TagChip
             selected={dockerSupport}
@@ -422,7 +476,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
 
       {/* 06 — Project Details */}
       <div className="form-card">
-        <SectionLabel number="06" label="Project Details" />
+        <SectionLabel number="06" label="Project Details" icon={<FileIcon />} />
+        <p className="section-desc">Name and module path for your new project</p>
         <Flex direction="column" gap="4">
           <div>
             <Text as="label" htmlFor="field-module-name" size="2" weight="bold" style={fieldLabel}>
@@ -511,6 +566,8 @@ const GeneratorForm: React.FC<{ onInteract?: () => void }> = ({ onInteract }) =>
           transition: 'background 0.15s, color 0.15s',
           fontFamily: 'inherit',
           boxShadow: isGenerating ? 'none' : '0 0 0 1px rgba(255,215,0,0.3), var(--shadow-sm)',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
         {isGenerating ? (

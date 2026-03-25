@@ -1239,3 +1239,39 @@
     padding: 0.5rem 0.75rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Generator Form Polish  (T-FE12 + T-FE13)
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Section description (T-FE12) ────────────────────────────── */
+.section-desc {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0.25rem 0 1rem;
+  line-height: 1.5;
+}
+
+/* ── Generate button shimmer (T-FE13) ────────────────────────── */
+@keyframes btn-shimmer {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(250%)  skewX(-15deg); }
+}
+
+.generate-btn:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-15deg);
+  pointer-events: none;
+}
+
+.generate-btn:not(:disabled):hover::after {
+  animation: btn-shimmer 0.55s ease-out forwards;
+}
