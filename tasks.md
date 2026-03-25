@@ -587,13 +587,13 @@ On: GitHub Release published
 
 - [x] **T-FE1 — [Frontend] Wrap app in `<BrowserRouter>`** — in `frontend/src/index.tsx`, import `BrowserRouter` from `react-router-dom` and wrap `<App />` with it; no other changes required in this task
 
-- [ ] **T-FE2 — [Frontend] Replace boolean `showExplore` toggle with `<Routes>`** — in `frontend/src/App.tsx`, remove the `showExplore` state and conditional rendering; add `<Routes>` with three `<Route>` entries:
+- [x] **T-FE2 — [Frontend] Replace boolean `showExplore` toggle with `<Routes>`** — in `frontend/src/App.tsx`, remove the `showExplore` state and conditional rendering; add `<Routes>` with three `<Route>` entries:
   - `/` → `<HomePage>` (hero + generator form)
   - `/docs` → `<Explore>`
   - `/cli` → `<CLIPage>`
   - `*` → redirect to `/` (catch-all)
 
-- [ ] **T-FE3 — [Frontend] Convert header nav to `<NavLink>` items** — replace the "Docs" `<button>` in `App.tsx` header with `<NavLink to="/docs">Docs</NavLink>`; add `<NavLink to="/cli">CLI</NavLink>` alongside it; convert the logo wordmark `<button>` to `<Link to="/">`; update `.nav-link--active` CSS to match React Router's `isActive` class (NavLink adds `active` class by default — either add `.nav-link.active` rule or use `className` prop with `({isActive}) => ...`)
+- [x] **T-FE3 — [Frontend] Convert header nav to `<NavLink>` items** — replace the "Docs" `<button>` in `App.tsx` header with `<NavLink to="/docs">Docs</NavLink>`; add `<NavLink to="/cli">CLI</NavLink>` alongside it; convert the logo wordmark `<button>` to `<Link to="/">`; update `.nav-link--active` CSS to match React Router's `isActive` class (NavLink adds `active` class by default — either add `.nav-link.active` rule or use `className` prop with `({isActive}) => ...`)
 
 ---
 
