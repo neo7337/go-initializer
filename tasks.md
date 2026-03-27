@@ -574,6 +574,7 @@ On: GitHub Release published
 | 12 — AI Agent Capabilities | T-AI1–T-AI11 | High | Phase 2 | All done |
 | 13 — Distribution & Release | T36–T39 | Low-Medium | Phases 11 + 12 | Open |
 | 14 — Frontend Showcase & Routing | T-FE1–T-FE18 | Medium-High | Phase 11 | Open |
+| 15 — Security Hardening | T-SEC1–T-SEC22 | Medium-High | Phase 8 (infra stable) | Open |
 
 ---
 
@@ -759,3 +760,153 @@ All Go packages have no CGO requirements — the binary remains fully static and
 | 12. LLM helper generators (T-AI4–T-AI8) | Phase 12 | T-AI9 |
 | 13. `AIAgentGenerator` + addon structs (T-AI9–T-AI11) | Phase 12 | Phase 13 |
 | 14. goreleaser + release workflow + Homebrew + README (T36–T39) | Phase 13 | — |
+| 15. Security hardening — all sub-phases (T-SEC1–T-SEC22) | Phase 15 | Phase 8 (infra stable) |
+
+---
+
+## Phase 15 — Security Hardening
+> Medium-high complexity. Covers OWASP Top 10 mitigations across the backend API, frontend delivery, containers, and CI/CD pipeline. Tasks are grouped by attack surface and ordered low → high effort within each group. None of these tasks have dependencies on each other — they can be worked in parallel.
+
+**Threat model summary for go-initializer:**
+- Public-facing web service accepting structured JSON input and returning generated code as a zip archive
+- No authentication — all endpoints are intentionally public
+- Primary risks: resource exhaustion via unbounded generation requests, path traversal in generated file names, information leakage via error responses, supply-chain compromise, container breakout via over-privileged images
+- **neolabs-infra deployment surface**: the application runs on a shared host alongside `trekyourworld`; nginx proxy manager (NPM) is the public TLS termination point; Redis is co-located with no authentication; all deployments are triggered by pushing to `main` in `neolabs-infra` via SCP — the attack surface includes the NPM admin UI, Redis, and the deploy pipeline itself
+
+---
+
+### Phase A — Backend API Hardening
+
+- [x] **T-SEC1 — [Backend] Lock down CORS to explicit allowed origins** — `router.go` currently sets `AllowOrigins: []string{"*"}` which is acceptable for a fully-public, credential-free API but must be configurable for self-hosted deployments where the frontend and backend are on the same domain; read an `ALLOWED_ORIGINS` env var (comma-separated list) at startup; if the var is absent default to `["*"]`; log a `[WARN]` when the wildcard default is active so operators know to configure it in production; reject pre-flight requests that supply an origin not in the allow-list with `403`; **neolabs-infra integration**: add `ALLOWED_ORIGINS=${GOINIT_ALLOWED_ORIGINS}` to the `goinitializer-backend` `environment:` block in `neolabs-infra/docker-compose.yml`, register `GOINIT_ALLOWED_ORIGINS` as a GitHub Actions secret, and inject it via `envsubst` in `deploy.yml` — the value should be the nginx proxy manager-proxied frontend domain (e.g. `https://go.example.com`)
+
+- [ ] **T-SEC2 — [Backend] Add rate limiting middleware** — the `/api/generate` endpoint is CPU-bound (zip creation, template rendering); an unauthenticated caller can exhaust server resources with a burst of parallel requests; add `golang.org/x/time/rate` token-bucket rate limiting as a Gin middleware in `router.go`; limit: **10 req/s burst, 5 req/s sustained** per remote IP (use `X-Forwarded-For` when behind a proxy, fall back to `RemoteAddr`); return `429 Too Many Requests` with a `Retry-After` header on breach; make the limit configurable via `RATE_LIMIT_RPS` and `RATE_LIMIT_BURST` env vars; **neolabs-infra**: in production the backend sits behind nginx proxy manager on the `proxy-tier` Docker network — call `engine.SetTrustedProxies([]string{"<proxy-tier subnet>"})` at server startup (or use the `proxy-server` container name with Docker's embedded DNS) so Gin reads `X-Forwarded-For` only from NPM and not from untrusted callers who could spoof their IP; the subnet can be resolved at startup via `net.LookupHost("proxy-server")` or hardcoded from the Docker network CIDR
+
+- [ ] **T-SEC3 — [Backend] Enforce request body size limit** — `GenerateHandler` calls `ctx.ShouldBindJSON` with no body-size guard; a malicious caller can send a multi-MB JSON body to exhaust memory; wrap the request body with `http.MaxBytesReader(w, r.Body, 1<<16)` (64 KB) before binding; Gin exposes the raw `http.ResponseWriter` and `*http.Request` via `ctx.Writer` and `ctx.Request` — apply the limit in a `MaxBodyBytes` middleware registered on the `/api/generate` route only; return `413 Request Entity Too Large` on breach
+
+- [ ] **T-SEC4 — [Backend] Add security HTTP response headers middleware** — none of the standard defensive headers are currently set; add a `SecurityHeaders` middleware in `internal/server/` that sets the following on every response:
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: DENY`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
+  - `Content-Security-Policy: default-src 'none'` (API responses are JSON/binary — no HTML is served)
+  - Do **not** set `Strict-Transport-Security` here — in the neolabs-infra deployment, nginx proxy manager handles TLS termination and issues Let's Encrypt certificates; enable HSTS in the NPM proxy host settings for the go-initializer domain (`Advanced` tab → add `add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;`) rather than in the application layer
+
+- [ ] **T-SEC5 — [Backend] Sanitize `ProjectName` and `ModulePath` inputs against path traversal** — generated zip entries use `request.ProjectName` as a path prefix (e.g. `<name>/cmd/<name>/main.go`); a crafted `ProjectName` containing `../` or absolute path segments could write files outside the intended zip structure or, if extracted naïvely, escape the output directory; add a `sanitizeName(s string) error` helper in `gen_utils.go` that:
+  - Rejects any value containing `/`, `\`, `..`, or null bytes
+  - Enforces the regex `^[a-zA-Z][a-zA-Z0-9_-]{0,63}$` for `ProjectName`
+  - Enforces the regex `^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,255}$` for `ModulePath` (Go module paths allow `.`, `-`, `_`, `/`)
+  - Call `sanitizeName` at the top of every `Generate()` method; return `400` with a descriptive message on failure
+
+- [ ] **T-SEC6 — [Backend] Add per-request context timeout on `/api/generate`** — `GenerateHandler` performs synchronous zip generation with no deadline; a generator bug or a very large request could hold a goroutine indefinitely; inject `context.WithTimeout(ctx.Request.Context(), 30*time.Second)` at the top of `GenerateHandler` and pass it into the `Generate(ctx, request)` call; update the `Generator` interface to accept a `context.Context` as the first parameter; each generator should respect `ctx.Err()` between major steps and return early on cancellation; return `504 Gateway Timeout` if the deadline is exceeded
+
+- [ ] **T-SEC7 — [Backend] Redact sensitive data from error logs** — `handler.go` logs `request` structs at `[INFO]` level via `log.Printf("[INFO] Received request: %+v", request)`; future fields (e.g. API keys for AI providers) could appear in logs verbatim; replace the raw `%+v` struct dump with explicit field logging (`ProjectName`, `ProjectType`, `Framework`, `GoVersion`) and omit any fields from `AddonDetails`/`Description` that may contain user-controlled free-text; add a `[SECURITY]` log tag to any log line emitted by the `SecurityHeaders` or rate-limit middleware
+
+---
+
+### Phase B — Frontend Delivery Hardening
+
+- [ ] **T-SEC8 — [Frontend] Add security headers to nginx** — `nginx.conf` currently serves static files with no defensive headers; add the following to the `server {}` block:
+  ```nginx
+  add_header X-Content-Type-Options    "nosniff"                          always;
+  add_header X-Frame-Options           "DENY"                             always;
+  add_header X-XSS-Protection          "1; mode=block"                    always;
+  add_header Referrer-Policy           "strict-origin-when-cross-origin"  always;
+  add_header Permissions-Policy        "geolocation=(), microphone=(), camera=()" always;
+  add_header Content-Security-Policy
+    "default-src 'self';
+     script-src  'self';
+     style-src   'self' 'unsafe-inline';
+     img-src     'self' data:;
+     font-src    'self';
+     connect-src 'self' http://localhost:8182 https://go-initializer-backend;
+     frame-ancestors 'none';"
+    always;
+  server_tokens off;
+  ```
+  **neolabs-infra**: in production the backend API is not on `localhost:8182` — it is served through nginx proxy manager at the domain configured for `goinitializer-backend`; replace `http://localhost:8182 https://go-initializer-backend` in `connect-src` with the actual production API origin; to avoid hardcoding the URL in `nginx.conf`, accept it as an nginx variable: in the frontend `Dockerfile` add `ARG API_BASE_URL` and use `envsubst '${API_BASE_URL}'` to substitute a placeholder in `nginx.conf` at container start (or during build); in `neolabs-infra/docker-compose.yml` the frontend image is already pre-built (`neo73/goinitializer-web:latest`) — the deploy workflow must pass the correct API URL as a `--build-arg` when building the frontend image in `go-initializer`'s release workflow; the CSP `unsafe-inline` for styles is required because Vite currently injects a small inline style for the loading state — track removing it as a follow-up
+
+- [ ] **T-SEC9 — [Frontend] Run `npm audit` as a CI gate** — add a step to the CI workflow (or the frontend Docker build stage) that runs `npm audit --audit-level=high`; fail the build if any high-severity or critical vulnerabilities are reported in direct or transitive dependencies; this catches issues like the Node 18 / Vite version mismatch that was recently hit
+
+---
+
+### Phase C — Container & Infrastructure Security
+
+- [ ] **T-SEC10 — [Infra] Pin Docker base image digests** — `FROM node:22-alpine`, `FROM golang:1.24.4-alpine`, and `FROM nginx:stable-alpine` are mutable tags; a upstream tag re-push can silently change the image, breaking reproducibility and introducing vulnerabilities; replace all three tags with their full `sha256` digest form (e.g. `FROM node:22-alpine@sha256:<digest>`); add a comment with the resolved date so reviewers know when the digest was last updated; add a note in the `Makefile` with a `make update-digests` target that re-resolves current digests via `docker buildx imagetools inspect`; **neolabs-infra**: also pin `jc21/nginx-proxy-manager:latest` in `neolabs-infra/docker-compose.yml` to its SHA256 digest — NPM is the critical TLS termination and routing layer for all hosted services and a silent image substitution would affect the entire deployment; resolve with `docker buildx imagetools inspect jc21/nginx-proxy-manager:latest`
+
+- [ ] **T-SEC11 — [Infra] Add container resource limits in `neolabs-infra/docker-compose.yml`** — none of the deployed services have CPU or memory limits; an unbounded generation request or a bug in any service could monopolise the host and affect all co-hosted applications; the production deployment config is `neolabs-infra/docker-compose.yml` (not go-initializer's dev compose); add `deploy.resources.limits` for each service:
+  - `goinitializer-backend`: `cpus: '1.0'`, `memory: 512M`
+  - `goinitializer-frontend`: `cpus: '0.25'`, `memory: 128M`
+  - `trekyourworld-backend`: `cpus: '1.0'`, `memory: 512M`
+  - `trekyourworld-frontend`: `cpus: '0.25'`, `memory: 128M`
+  - `proxy-server` (NPM): `cpus: '0.5'`, `memory: 256M`
+  - `redis`: `cpus: '0.5'`, `memory: 256M`
+  Add `security_opt: [no-new-privileges:true]` to `goinitializer-backend` and both trekyourworld services; add `read_only: true` to the `goinitializer-frontend` nginx container with a `tmpfs` mount for `/var/cache/nginx` and `/var/run`; do **not** set `read_only: true` on the `proxy-server` service — NPM writes config state and certificates to the `./data` volume and requires a writable root filesystem
+
+- [ ] **T-SEC12 — [Infra] Add Trivy image vulnerability scan to CI** — after the Docker build steps in `release.yml`, add a `scan-images` job that runs `aquasecurity/trivy-action` against each built image; fail on `CRITICAL` severity CVEs; upload the SARIF report as a GitHub Code Scanning result using `github/codeql-action/upload-sarif`; run this scan on both the `build-backend` and `build-frontend` job outputs
+
+---
+
+### Phase D — CI/CD & Supply Chain Security
+
+- [ ] **T-SEC13 — [CI] Add `govulncheck` step to Go CI** — `govulncheck` (the official Go vulnerability scanner) checks the module graph against the Go vulnerability database; add a job step in the release workflow (or a dedicated `security.yml` workflow triggered on push/PR) that runs `govulncheck ./...` from the repo root; fail on any reported vulnerabilities in direct dependencies; run this before the Docker build step so a vulnerable build never reaches the registry
+
+- [ ] **T-SEC14 — [CI] Add `gosec` SAST scan** — `gosec` performs static security analysis of Go source: hardcoded credentials, integer overflows, weak cryptography, unsafe use of `os/exec`, unhandled errors on security-relevant calls; add a `gosec ./...` step to the CI workflow; configure `.gosec.yaml` to suppress known false-positives (e.g. zip slip false positive on intentional zip writing in generators); fail on issues of severity `MEDIUM` or higher
+
+- [ ] **T-SEC15 — [CI] Pin all GitHub Actions to SHA digests** — `uses: actions/checkout@v4` and similar action references are mutable; a compromised action tag can execute arbitrary code in the workflow; replace all `@vN` action refs in `.github/workflows/` with their commit SHA equivalent (e.g. `actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683`); add a comment with the human-readable version alongside each SHA so reviewers can verify; use `dependabot` or `renovatebot` to keep SHA pins up to date; **neolabs-infra**: apply the same pinning to `neolabs-infra/.github/workflows/deploy.yml` — pin `actions/checkout@v4` and `appleboy/scp-action@v0.1.7` to their commit SHA digests; add `appleboy/ssh-action` (to be introduced in T-SEC22) pinned at the same time
+
+- [ ] **T-SEC16 — [CI] Add explicit least-privilege `permissions:` blocks to all workflow jobs** — GitHub Actions tokens default to broad `write-all` repository permissions; restrict each job to only what it needs:
+  - `build-frontend` / `build-backend` jobs: `contents: read`, `packages: write` (Docker Hub via secret, not GHCR — so `packages` is not needed; use `contents: read` only)
+  - `release-cli` job (goreleaser): `contents: write` (to attach release assets), `id-token: write` (for OIDC / Sigstore if added)
+  - Top-level `permissions: {}` to deny all by default at the workflow level; individual jobs opt in to what they need
+  - **neolabs-infra**: `neolabs-infra/.github/workflows/deploy.yml` currently has no `permissions:` block at all; add `permissions: {}` at the workflow level and `permissions: contents: read` on the `deploy` job — the job only checks out code, injects secrets via `envsubst`, and copies a file over SCP; it requires no write access to the repository
+
+- [ ] **T-SEC17 — [CI] Generate and attach SBOM to releases** — add a `syft` step (via `anchore/sbom-action`) to the goreleaser job to generate SBOMs in both SPDX and CycloneDX formats for the CLI binary and Docker images; attach the SBOM files as additional release assets; this satisfies supply-chain transparency requirements (SLSA Level 1) and makes it possible for downstream consumers to audit the dependency graph
+
+---
+
+### Phase E — Secrets & Runtime Configuration
+
+- [ ] **T-SEC18 — [Infra] Fix secrets handling and env var naming across neolabs-infra and go-initializer** — several issues exist across both repos:
+  1. **VITE rename**: `neolabs-infra/docker-compose.yml` still references `REACT_APP_API_URL` in the `goinitializer-frontend` environment block and `GOINIT_REACT_APP_API_URL` in the GitHub Secret / `deploy.yml` injection; after T-UX1 (Vite migration) the correct var is `VITE_API_BASE_URL` — rename the GitHub Secret to `GOINIT_VITE_API_BASE_URL`, update `deploy.yml`, and update the `environment:` block in `docker-compose.yml` to `VITE_API_BASE_URL=${GOINIT_VITE_API_BASE_URL}`
+  2. **Server-side file permissions**: `deploy.yml` copies `docker-compose.prod.yml` (containing substituted secret values) to `/home/app/` on the remote server; add an SSH step that runs `chmod 600 /home/app/docker-compose.prod.yml` immediately after the SCP to prevent other OS users on the server from reading credentials
+  3. **go-initializer env file**: `docker-compose.yml` (local dev) will require `OPENAI_API_KEY`, `GEMINI_API_KEY` and similar secrets for AI features; add `.env.example` to the repo root with placeholder values; confirm `.env` is in `.gitignore` and `.dockerignore`; add a `## Local Development` section to `README.md` explaining the `.env.example` → `.env` copy workflow
+
+- [ ] **T-SEC19 — [Infra] Add `.dockerignore` files to both build contexts** — neither the root (backend) nor `frontend/` directory has a `.dockerignore` file; without it, `COPY . .` includes `.git/`, `node_modules/`, `.env`, test files, and local build artefacts in the image layer, wasting space and potentially leaking secrets or development credentials; add `.dockerignore` at repo root (covering `cmd/server` Dockerfile context) excluding: `.git`, `frontend/`, `*.md`, `bin/`, `*.test`, `.env*`, `**/*_test.go`; add `frontend/.dockerignore` excluding: `.git`, `node_modules`, `build/`, `dist/`, `.env*`, `*.md`
+
+---
+
+### Phase F — neolabs-infra Network & Deployment Security
+
+- [ ] **T-SEC20 — [Infra] Remove publicly-exposed Redis port** — `neolabs-infra/docker-compose.yml` binds Redis on `0.0.0.0:6379:6379`; Redis has no authentication configured (no `--requirepass` flag or ACL file) and the host port binding makes it reachable on every network interface of the server; remove the `ports:` block from the `redis` service entirely — all consumers (`trekyourworld-backend`, `goinitializer-backend`) reach Redis via the `proxy-tier` Docker network using the container hostname `trekyourworld-redis` and do not require a host port binding; if Redis auth is needed in future, add `--requirepass ${REDIS_PASSWORD}` to the service command and set the password via an env var; closes a significant remote-access vulnerability on any server without a host-level firewall rule for port 6379
+
+- [ ] **T-SEC21 — [Infra] Bind nginx proxy manager admin UI to loopback** — `neolabs-infra/docker-compose.yml` exposes the NPM admin panel on `'81:81'` (bound to `0.0.0.0`) making the web UI reachable from the public internet; a brute-forced or default-credential login (`admin@example.com` / `changeme`) gives full control over all reverse-proxy routing and TLS certificates for every hosted service; change `'81:81'` → `'127.0.0.1:81:81'` in the `proxy-server` ports block so the admin panel is only reachable over an SSH tunnel (`ssh -L 81:localhost:81 user@host`); the public HTTP (`80`) and HTTPS (`443`) ports are unaffected; this eliminates the admin panel as a remote attack surface without blocking legitimate administrative access
+
+- [ ] **T-SEC22 — [Infra] Add SSH remote execution step to neolabs-infra deploy.yml** — the deploy workflow copies `docker-compose.prod.yml` to `/home/app/` via SCP but never executes it (the inline comment "Rename it back to docker-compose.yml on the server" is misleading — `rm: true` in `appleboy/scp-action` deletes the **local** source file on the GitHub runner, not the remote target); deployments are therefore incomplete without a manual SSH step; add an `appleboy/ssh-action` step after the SCP step that executes on the remote server:
+  ```bash
+  cd /home/app \
+    && chmod 600 docker-compose.prod.yml \
+    && mv docker-compose.prod.yml docker-compose.yml \
+    && docker compose pull \
+    && docker compose up -d --remove-orphans
+  ```
+  Use the already-configured `DO_HOST`, `DO_USER`, `SSH_PRIVATE_KEY`, and `SSH_PASSPHRASE` GitHub Secrets; scope the remote script to the minimum required \u2014 no wildcard shell expansion, no `sudo`; pin the `appleboy/ssh-action` reference to a SHA digest per T-SEC15
+
+---
+
+### Verification
+
+- [ ] `curl -H "Origin: http://evil.com" -I http://localhost:8182/api/meta` → CORS headers absent or `403` (not `*`) when `ALLOWED_ORIGINS` is set
+- [ ] Burst 20 rapid `POST /api/generate` requests → 11th+ returns `429` with `Retry-After`
+- [ ] `POST /api/generate` with a 200 KB body → `413` response
+- [ ] `POST /api/generate` with `"name": "../../etc/passwd"` → `400` with sanitization error
+- [ ] `curl -I http://localhost:8001` → response includes `X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`; `Server:` header absent or shows no version
+- [ ] `npm audit --audit-level=high` in `frontend/` → zero high/critical issues
+- [ ] `govulncheck ./...` from repo root → no vulnerabilities reported
+- [ ] `gosec ./...` → zero medium/high/critical findings after `.gosec.yaml` tuning
+- [ ] Docker image built from pinned digest — `docker inspect` confirms `RepoDigests` matches expected SHA
+- [ ] `docker-compose up` with `read_only: true` — both containers start successfully; nginx writes to tmpfs mounts without error
+- [ ] `.env` absent from Docker image layers: `docker history --no-trunc <image>` shows no `ADD .env` entry
+- [ ] **neolabs-infra**: `nc -zv <server-ip> 6379` times out — Redis port 6379 is not reachable from outside the Docker network
+- [ ] **neolabs-infra**: `curl http://<server-ip>:81` times out from a remote client; NPM admin is accessible only via SSH tunnel
+- [ ] **neolabs-infra**: pushing to `main` in neolabs-infra triggers the full pipeline — compose file is copied **and** `docker compose up -d` runs on the server without manual intervention
+- [ ] **neolabs-infra**: `curl -H "Origin: http://evil.com" -I https://<production-frontend-domain>/api/meta` → `403` (ALLOWED_ORIGINS is set to the production frontend domain)
