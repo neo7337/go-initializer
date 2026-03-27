@@ -3,11 +3,12 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 )
 
 // Generator is implemented by each project-type generator.
 type Generator interface {
-	Generate(request CreateProjectRequest) (*bytes.Buffer, error)
+	Generate(ctx context.Context, request CreateProjectRequest) (*bytes.Buffer, error)
 }
 
 // AddonGenerator writes addon-specific files directly into the project zip.

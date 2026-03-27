@@ -3,6 +3,7 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 )
@@ -19,7 +20,7 @@ import (
 //	└── Dockerfile          (optional)
 type SimpleProjectGenerator struct{}
 
-func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+func (g *SimpleProjectGenerator) Generate(ctx context.Context, request CreateProjectRequest) (*bytes.Buffer, error) {
 	if request.Name == "" {
 		request.Name = "myproject"
 	}
@@ -50,6 +51,10 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 	}
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/go.mod", folderName), gomodContent); err != nil {
 		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -93,6 +98,10 @@ func (g *SimpleProjectGenerator) Generate(request CreateProjectRequest) (*bytes.
 	}
 
 	// internal/service.go
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/internal/service.go", folderName), GenerateServiceContent(folderName)); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err

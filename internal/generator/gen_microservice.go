@@ -3,6 +3,7 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 )
@@ -27,7 +28,7 @@ import (
 //	└── Dockerfile                # if dockerSupport is true
 type MicroserviceGenerator struct{}
 
-func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+func (g *MicroserviceGenerator) Generate(ctx context.Context, request CreateProjectRequest) (*bytes.Buffer, error) {
 	if request.Name == "" {
 		request.Name = "myservice"
 	}
@@ -58,6 +59,10 @@ func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.B
 	}
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/go.mod", folderName), gomodContent); err != nil {
 		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -118,6 +123,10 @@ func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.B
 	}
 
 	// Makefile
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName, fmt.Sprintf("./cmd/%s", folderName))); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
