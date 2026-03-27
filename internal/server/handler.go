@@ -50,7 +50,8 @@ func GenerateHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	log.Printf("[INFO] Received request: %+v", request)
+	log.Printf("[INFO] Received request: projectType=%s name=%s moduleName=%s goVersion=%s framework=%s",
+		request.ProjectType, request.Name, request.ModuleName, request.GoVersion, request.Framework)
 
 	gen, ok := generator.GeneratorRegistry[request.ProjectType]
 	if !ok {
