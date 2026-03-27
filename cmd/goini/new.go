@@ -102,7 +102,7 @@ func runNew(cmd *cobra.Command, opts *newOpts) error {
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Generating %s project…\n", req.ProjectType)
 
-	zipBuf, err := gen.Generate(req)
+	zipBuf, err := gen.Generate(cmd.Context(), req)
 	if err != nil {
 		return fmt.Errorf("generation failed: %w", err)
 	}

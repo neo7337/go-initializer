@@ -3,6 +3,7 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 )
@@ -29,14 +30,21 @@ import (
 //	└── Dockerfile                 # if dockerSupport is true
 type AIAgentGenerator struct{}
 
-func (g *AIAgentGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+func (g *AIAgentGenerator) Generate(ctx context.Context, request CreateProjectRequest) (*bytes.Buffer, error) {
+	if request.Name == "" {
+		request.Name = "myagent"
+	}
+	if err := ValidateProjectName(request.Name); err != nil {
+		return nil, err
+	}
+	if err := ValidateModuleName(request.ModuleName); err != nil {
+		return nil, err
+	}
+
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 
 	folderName := request.Name
-	if folderName == "" {
-		folderName = "myagent"
-	}
 
 	// README.md
 	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
@@ -53,6 +61,10 @@ func (g *AIAgentGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer
 	}
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/go.mod", folderName), gomodContent); err != nil {
 		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -121,6 +133,10 @@ func (g *AIAgentGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer
 	}
 
 	// Makefile — main package is at the project root "."
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName, ".")); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err

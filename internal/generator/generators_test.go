@@ -3,6 +3,7 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"strings"
 	"testing"
 
@@ -55,7 +56,7 @@ func TestSimpleProjectGenerator_Basic(t *testing.T) {
 		ModuleName:  "github.com/acme/myproj",
 		Name:        "myproj",
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 
@@ -76,7 +77,7 @@ func TestSimpleProjectGenerator_ReadmeContainsName(t *testing.T) {
 		Name:        "alpha",
 		Description: "my alpha service",
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	readme := hasEntry(t, entries, "alpha/README.md")
@@ -93,7 +94,7 @@ func TestSimpleProjectGenerator_WithDocker(t *testing.T) {
 		Name:          "myproj",
 		DockerSupport: true,
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "myproj/Dockerfile")
@@ -108,7 +109,7 @@ func TestSimpleProjectGenerator_WithoutDocker(t *testing.T) {
 		Name:          "myproj",
 		DockerSupport: false,
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	_, ok := entries["myproj/Dockerfile"]
@@ -124,7 +125,7 @@ func TestSimpleProjectGenerator_WithRedisAddon(t *testing.T) {
 		Name:        "myproj",
 		Addons:      map[string][]string{"cache": {"redis"}},
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	content := hasEntry(t, entries, "myproj/internal/cache/cache.go")
@@ -140,7 +141,7 @@ func TestSimpleProjectGenerator_WithGormAddon(t *testing.T) {
 		Name:        "myproj",
 		Addons:      map[string][]string{"database": {"gorm"}},
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	content := hasEntry(t, entries, "myproj/internal/database/database.go")
@@ -156,7 +157,7 @@ func TestSimpleProjectGenerator_WithZapLogging(t *testing.T) {
 		Name:        "myproj",
 		Addons:      map[string][]string{"other": {"zap"}},
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	content := hasEntry(t, entries, "myproj/internal/logger/logger.go")
@@ -171,7 +172,7 @@ func TestSimpleProjectGenerator_EmptyNameDefaultsToMyproject(t *testing.T) {
 		ModuleName:  "github.com/acme/myproject",
 		Name:        "",
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "myproject/README.md")
@@ -185,7 +186,7 @@ func TestSimpleProjectGenerator_MainPackageIsMain(t *testing.T) {
 		ModuleName:  "github.com/acme/p",
 		Name:        "p",
 	}
-	buf, err := GeneratorRegistry["simple-project"].Generate(req)
+	buf, err := GeneratorRegistry["simple-project"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	main := hasEntry(t, entries, "p/cmd/p/main.go")
@@ -206,7 +207,7 @@ func TestMicroserviceGenerator_RequiredFiles(t *testing.T) {
 				ModuleName:  "github.com/acme/svc",
 				Name:        "svc",
 			}
-			buf, err := GeneratorRegistry["microservice"].Generate(req)
+			buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 			require.NoError(t, err)
 			entries := zipEntries(t, buf)
 
@@ -230,7 +231,7 @@ func TestMicroserviceGenerator_MainPackageIsMain(t *testing.T) {
 		ModuleName:  "github.com/acme/svc",
 		Name:        "svc",
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	main := hasEntry(t, entries, "svc/cmd/svc/main.go")
@@ -246,7 +247,7 @@ func TestMicroserviceGenerator_WithDocker(t *testing.T) {
 		Name:          "svc",
 		DockerSupport: true,
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "svc/Dockerfile")
@@ -261,7 +262,7 @@ func TestMicroserviceGenerator_WithCacheAddon(t *testing.T) {
 		Name:        "svc",
 		Addons:      map[string][]string{"cache": {"redis"}},
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "svc/internal/cache/cache.go")
@@ -276,7 +277,7 @@ func TestMicroserviceGenerator_WithDatabaseAddon(t *testing.T) {
 		Name:        "svc",
 		Addons:      map[string][]string{"database": {"ent"}},
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "svc/internal/database/database.go")
@@ -291,7 +292,7 @@ func TestMicroserviceGenerator_WithLogrusAddon(t *testing.T) {
 		Name:        "svc",
 		Addons:      map[string][]string{"other": {"logrus"}},
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	content := hasEntry(t, entries, "svc/internal/logger/logger.go")
@@ -306,7 +307,7 @@ func TestMicroserviceGenerator_EmptyNameDefaultsToMyservice(t *testing.T) {
 		ModuleName:  "github.com/acme/myservice",
 		Name:        "",
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "myservice/README.md")
@@ -320,7 +321,7 @@ func TestMicroserviceGenerator_ServiceStubContainsName(t *testing.T) {
 		ModuleName:  "github.com/acme/billing",
 		Name:        "billing",
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	svc := hasEntry(t, entries, "billing/internal/service/service.go")
@@ -341,7 +342,7 @@ func TestCLIAppGenerator_RequiredFiles(t *testing.T) {
 				ModuleName:  "github.com/acme/cli",
 				Name:        "cli",
 			}
-			buf, err := GeneratorRegistry["cli-app"].Generate(req)
+			buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 			require.NoError(t, err)
 			entries := zipEntries(t, buf)
 
@@ -364,7 +365,7 @@ func TestCLIAppGenerator_MainDelegatesToCmdExecute(t *testing.T) {
 		ModuleName:  "github.com/acme/tool",
 		Name:        "tool",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	main := hasEntry(t, entries, "tool/main.go")
@@ -380,7 +381,7 @@ func TestCLIAppGenerator_RootCmdPackage(t *testing.T) {
 		ModuleName:  "github.com/acme/tool",
 		Name:        "tool",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	root := hasEntry(t, entries, "tool/cmd/root.go")
@@ -396,7 +397,7 @@ func TestCLIAppGenerator_SubCmdPackage(t *testing.T) {
 		ModuleName:  "github.com/acme/tool",
 		Name:        "tool",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	sub := hasEntry(t, entries, "tool/cmd/tool.go")
@@ -411,7 +412,7 @@ func TestCLIAppGenerator_MakefileUsesRootPkg(t *testing.T) {
 		ModuleName:  "github.com/acme/tool",
 		Name:        "tool",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	mk := hasEntry(t, entries, "tool/Makefile")
@@ -428,7 +429,7 @@ func TestCLIAppGenerator_WithZapLogging(t *testing.T) {
 		Name:        "tool",
 		Addons:      map[string][]string{"other": {"zap"}},
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	content := hasEntry(t, entries, "tool/internal/logger/logger.go")
@@ -443,7 +444,7 @@ func TestCLIAppGenerator_EmptyNameDefaultsToMycli(t *testing.T) {
 		ModuleName:  "github.com/acme/mycli",
 		Name:        "",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	hasEntry(t, entries, "mycli/README.md")
@@ -474,7 +475,7 @@ func TestMicroserviceGenerator_GoModContainsFrameworkDep(t *testing.T) {
 		ModuleName:  "github.com/acme/echosvc",
 		Name:        "echosvc",
 	}
-	buf, err := GeneratorRegistry["microservice"].Generate(req)
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	gomod := hasEntry(t, entries, "echosvc/go.mod")
@@ -489,7 +490,7 @@ func TestCLIAppGenerator_GoModContainsCobraDep(t *testing.T) {
 		ModuleName:  "github.com/acme/ctool",
 		Name:        "ctool",
 	}
-	buf, err := GeneratorRegistry["cli-app"].Generate(req)
+	buf, err := GeneratorRegistry["cli-app"].Generate(context.Background(), req)
 	require.NoError(t, err)
 	entries := zipEntries(t, buf)
 	gomod := hasEntry(t, entries, "ctool/go.mod")
@@ -506,7 +507,7 @@ func TestGenerators_AllEntryPathsAreRelative(t *testing.T) {
 	}
 	for typ, req := range generators {
 		t.Run(typ, func(t *testing.T) {
-			buf, err := GeneratorRegistry[typ].Generate(req)
+			buf, err := GeneratorRegistry[typ].Generate(context.Background(), req)
 			require.NoError(t, err)
 			entries := zipEntries(t, buf)
 			for path := range entries {

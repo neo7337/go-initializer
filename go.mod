@@ -1,10 +1,11 @@
 module github.com/neo7337/go-initializer
 
-go 1.24.4
+go 1.25.0
 
 require (
 	github.com/dave/jennifer v1.7.1
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/time v0.15.0
 )
 
 require (

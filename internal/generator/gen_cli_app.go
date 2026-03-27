@@ -3,6 +3,7 @@ package generator
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 )
@@ -24,14 +25,21 @@ import (
 //	└── README.md
 type CLIAppGenerator struct{}
 
-func (g *CLIAppGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+func (g *CLIAppGenerator) Generate(ctx context.Context, request CreateProjectRequest) (*bytes.Buffer, error) {
+	if request.Name == "" {
+		request.Name = "mycli"
+	}
+	if err := ValidateProjectName(request.Name); err != nil {
+		return nil, err
+	}
+	if err := ValidateModuleName(request.ModuleName); err != nil {
+		return nil, err
+	}
+
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 
 	folderName := request.Name
-	if folderName == "" {
-		folderName = "mycli"
-	}
 
 	// README.md
 	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
@@ -48,6 +56,10 @@ func (g *CLIAppGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer,
 	}
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/go.mod", folderName), gomodContent); err != nil {
 		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -97,6 +109,10 @@ func (g *CLIAppGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer,
 	}
 
 	// Makefile — main package is at the project root "."
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/Makefile", folderName), GenerateMakefile(folderName, ".")); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err

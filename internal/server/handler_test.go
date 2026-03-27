@@ -2,10 +2,12 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -305,4 +307,63 @@ func TestGenerateHandler_MethodNotAllowed_Get(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/api/generate", nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+// ─── Context timeout (T-SEC6) ─────────────────────────────────────────────────
+
+// TestGenerateHandler_ExpiredContext_Returns504 confirms that when the request
+// context has already reached its deadline before generation completes, the
+// handler returns 504 Gateway Timeout.
+func TestGenerateHandler_ExpiredContext_Returns504(t *testing.T) {
+	r := newTestRouter()
+
+	payload := map[string]interface{}{
+		"projectType": "simple-project",
+		"goVersion":   "1.24.6",
+		"framework":   "golly",
+		"moduleName":  "github.com/acme/x",
+		"name":        "x",
+	}
+	body, _ := json.Marshal(payload)
+
+	// A context whose deadline has already passed simulates a timed-out caller.
+	expired, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+	defer cancel()
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/generate", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = req.WithContext(expired)
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusGatewayTimeout, w.Code)
+	var resp map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Contains(t, resp["error"], "timed out")
+}
+
+// TestGenerateHandler_PathTraversalName_Returns400 confirms that a crafted
+// project name containing path-traversal characters is rejected with 400.
+func TestGenerateHandler_PathTraversalName_Returns400(t *testing.T) {
+	r := newTestRouter()
+
+	payload := map[string]interface{}{
+		"projectType": "simple-project",
+		"goVersion":   "1.24.6",
+		"framework":   "golly",
+		"moduleName":  "github.com/acme/x",
+		"name":        "../evil",
+	}
+	body, _ := json.Marshal(payload)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/generate", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Contains(t, resp, "error")
 }
