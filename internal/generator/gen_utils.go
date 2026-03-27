@@ -4,10 +4,57 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 
 	jen "github.com/dave/jennifer/jen"
 )
+
+var (
+	reProjectName = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]{0,63}$`)
+	reModuleName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,255}$`)
+)
+
+// ErrValidation is returned when an input field fails sanitization checks.
+type ErrValidation struct {
+	Field   string
+	Message string
+}
+
+func (e *ErrValidation) Error() string {
+	return fmt.Sprintf("invalid %s: %s", e.Field, e.Message)
+}
+
+// ValidateProjectName checks that name is safe for use as a filesystem folder name.
+// Rejects path-traversal sequences (/, \, .., null bytes) and enforces the pattern
+// ^[a-zA-Z][a-zA-Z0-9_-]{0,63}$.
+func ValidateProjectName(name string) error {
+	if strings.ContainsAny(name, "/\\") || strings.Contains(name, "..") || strings.ContainsRune(name, 0) {
+		return &ErrValidation{Field: "name", Message: "contains disallowed characters (/, \\, .., or null bytes)"}
+	}
+	if !reProjectName.MatchString(name) {
+		return &ErrValidation{Field: "name", Message: `must match ^[a-zA-Z][a-zA-Z0-9_-]{0,63}$`}
+	}
+	return nil
+}
+
+// ValidateModuleName checks that a Go module path is safe.
+// Rejects backslashes, null bytes, and dotdot path segments, and enforces the pattern
+// ^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,255}$.
+func ValidateModuleName(moduleName string) error {
+	if strings.Contains(moduleName, "\\") || strings.ContainsRune(moduleName, 0) {
+		return &ErrValidation{Field: "moduleName", Message: "contains disallowed characters (backslash or null bytes)"}
+	}
+	for _, seg := range strings.Split(moduleName, "/") {
+		if seg == ".." {
+			return &ErrValidation{Field: "moduleName", Message: "contains path traversal sequence (..)"}
+		}
+	}
+	if !reModuleName.MatchString(moduleName) {
+		return &ErrValidation{Field: "moduleName", Message: `must match ^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,255}$`}
+	}
+	return nil
+}
 
 // addToZip writes content into a new zip entry at path, eliminating the
 // repeated create-then-write boilerplate across all generators.

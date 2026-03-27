@@ -783,7 +783,7 @@ All Go packages have no CGO requirements — the binary remains fully static and
 
 - [x] **T-SEC3 — [Backend] Enforce request body size limit** — `GenerateHandler` calls `ctx.ShouldBindJSON` with no body-size guard; a malicious caller can send a multi-MB JSON body to exhaust memory; wrap the request body with `http.MaxBytesReader(w, r.Body, 1<<16)` (64 KB) before binding; Gin exposes the raw `http.ResponseWriter` and `*http.Request` via `ctx.Writer` and `ctx.Request` — apply the limit in a `MaxBodyBytes` middleware registered on the `/api/generate` route only; return `413 Request Entity Too Large` on breach
 
-- [ ] **T-SEC4 — [Backend] Add security HTTP response headers middleware** — none of the standard defensive headers are currently set; add a `SecurityHeaders` middleware in `internal/server/` that sets the following on every response:
+- [x] **T-SEC4 — [Backend] Add security HTTP response headers middleware** — none of the standard defensive headers are currently set; add a `SecurityHeaders` middleware in `internal/server/` that sets the following on every response:
   - `X-Content-Type-Options: nosniff`
   - `X-Frame-Options: DENY`
   - `Referrer-Policy: strict-origin-when-cross-origin`
@@ -791,7 +791,7 @@ All Go packages have no CGO requirements — the binary remains fully static and
   - `Content-Security-Policy: default-src 'none'` (API responses are JSON/binary — no HTML is served)
   - Do **not** set `Strict-Transport-Security` here — in the neolabs-infra deployment, nginx proxy manager handles TLS termination and issues Let's Encrypt certificates; enable HSTS in the NPM proxy host settings for the go-initializer domain (`Advanced` tab → add `add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;`) rather than in the application layer
 
-- [ ] **T-SEC5 — [Backend] Sanitize `ProjectName` and `ModulePath` inputs against path traversal** — generated zip entries use `request.ProjectName` as a path prefix (e.g. `<name>/cmd/<name>/main.go`); a crafted `ProjectName` containing `../` or absolute path segments could write files outside the intended zip structure or, if extracted naïvely, escape the output directory; add a `sanitizeName(s string) error` helper in `gen_utils.go` that:
+- [x] **T-SEC5 — [Backend] Sanitize `ProjectName` and `ModulePath` inputs against path traversal** — generated zip entries use `request.ProjectName` as a path prefix (e.g. `<name>/cmd/<name>/main.go`); a crafted `ProjectName` containing `../` or absolute path segments could write files outside the intended zip structure or, if extracted naïvely, escape the output directory; add a `sanitizeName(s string) error` helper in `gen_utils.go` that:
   - Rejects any value containing `/`, `\`, `..`, or null bytes
   - Enforces the regex `^[a-zA-Z][a-zA-Z0-9_-]{0,63}$` for `ProjectName`
   - Enforces the regex `^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,255}$` for `ModulePath` (Go module paths allow `.`, `-`, `_`, `/`)

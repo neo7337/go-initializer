@@ -69,6 +69,10 @@ func NewRouter(v *validator.Validate) *gin.Engine {
 			"Set TRUSTED_PROXIES to the proxy-tier CIDR in production.")
 	}
 
+	// Security response headers — registered first so all responses including
+	// 429 / 403 from downstream middleware carry the defensive headers.
+	service.Use(SecurityHeadersMiddleware)
+
 	// Rate limiting — applied before CORS so abusive callers are rejected early.
 	rps, burst := rateLimitParamsFromEnv()
 	service.Use(RateLimitMiddleware(newRateLimiterStore(rps, burst)))

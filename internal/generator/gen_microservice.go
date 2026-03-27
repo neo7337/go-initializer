@@ -28,13 +28,20 @@ import (
 type MicroserviceGenerator struct{}
 
 func (g *MicroserviceGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+	if request.Name == "" {
+		request.Name = "myservice"
+	}
+	if err := ValidateProjectName(request.Name); err != nil {
+		return nil, err
+	}
+	if err := ValidateModuleName(request.ModuleName); err != nil {
+		return nil, err
+	}
+
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 
 	folderName := request.Name
-	if folderName == "" {
-		folderName = "myservice"
-	}
 
 	// README.md
 	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)

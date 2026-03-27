@@ -63,6 +63,11 @@ func GenerateHandler(ctx *gin.Context) {
 
 	buf, err := gen.Generate(request)
 	if err != nil {
+		var ve *generator.ErrValidation
+		if errors.As(err, &ve) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": ve.Error()})
+			return
+		}
 		log.Printf("[ERROR] Failed to generate project: %v", err)
 		resp := generator.ErrorResponseBody{
 			StatusCode: http.StatusInternalServerError,

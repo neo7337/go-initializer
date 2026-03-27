@@ -25,13 +25,20 @@ import (
 type CLIAppGenerator struct{}
 
 func (g *CLIAppGenerator) Generate(request CreateProjectRequest) (*bytes.Buffer, error) {
+	if request.Name == "" {
+		request.Name = "mycli"
+	}
+	if err := ValidateProjectName(request.Name); err != nil {
+		return nil, err
+	}
+	if err := ValidateModuleName(request.ModuleName); err != nil {
+		return nil, err
+	}
+
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 
 	folderName := request.Name
-	if folderName == "" {
-		folderName = "mycli"
-	}
 
 	// README.md
 	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
