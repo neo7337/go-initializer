@@ -119,7 +119,9 @@ func NewRouter(v *validator.Validate) *gin.Engine {
 
 	service.GET("/api/meta", MetaHandler)
 
-	service.POST("/api/generate", GenerateHandler)
+	// MaxBodyBytesMiddleware is scoped to this route only — not the global chain —
+	// because only /api/generate accepts a request body.
+	service.POST("/api/generate", MaxBodyBytesMiddleware, GenerateHandler)
 
 	return service
 }

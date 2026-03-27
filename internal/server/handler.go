@@ -23,6 +23,13 @@ func MetaHandler(ctx *gin.Context) {
 func GenerateHandler(ctx *gin.Context) {
 	var request generator.CreateProjectRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
+		// Detect an oversized body before reporting a generic bad-request error.
+		// *http.MaxBytesError is set by MaxBodyBytesMiddleware via MaxBytesReader.
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			ctx.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "request body exceeds the 64 KB limit"})
+			return
+		}
 		log.Printf("[ERROR] Failed to bind JSON: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
