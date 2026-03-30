@@ -31,9 +31,10 @@ USER nginxuser
 # Copy static files (ensure they are owned by the new user)
 COPY --from=builder --chown=nginxuser:nginxgroup /app/dist /usr/share/nginx/html
 
-# copy custom nginx config
-COPY --chown=nginxuser:nginxgroup nginx.conf /etc/nginx/conf.d/default.conf
+# copy custom nginx config as a template; envsubst will substitute
+# ${API_BASE_URL} at container start, leaving nginx variables ($uri etc.) intact
+COPY --chown=nginxuser:nginxgroup nginx.conf /etc/nginx/conf.d/default.conf.template
 
 EXPOSE 8001
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "envsubst '${API_BASE_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
