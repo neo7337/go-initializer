@@ -19,8 +19,7 @@
     "scripts": {
         "start": "vite",
         "build": "vite build",
-        "preview": "vite preview",
-        "preinstall": "npx npm-force-resolutions"
+        "preview": "vite preview"
     },
     "browserslist": {
         "production": [
@@ -42,8 +41,5 @@
         "postcss-calc": "^10.1.1",
         "tailwindcss": "^4.1.12",
         "vite": "^8.0.0"
-    },
-    "resolutions": {
-        "postcss-calc": "^9.0.0"
     }
 }
