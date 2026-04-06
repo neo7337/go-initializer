@@ -1,5 +1,6 @@
 # Stage 1: Build
-FROM node:22-alpine AS builder
+# Resolved: 2026-04-06
+FROM node:22-alpine@sha256:4d64b49e6c891c8fc821007cb1cdc6c0db7773110ac2c34bf2e6960adef62ed3 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -13,7 +14,8 @@ ENV VITE_API_URL=${API_BASE_URL}
 RUN npm run build
 
 # Stage 2: Serve with Nginx as Non-Root
-FROM nginx:stable-alpine
+# Resolved: 2026-04-06
+FROM nginx:stable-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
 
 RUN addgroup -S nginxgroup && adduser -S nginxuser -G nginxgroup
 

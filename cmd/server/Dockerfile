@@ -1,5 +1,6 @@
 # Backend Dockerfile
-FROM golang:1.25.8-alpine AS builder
+# Resolved: 2026-04-06
+FROM golang:1.25.8-alpine@sha256:8e02eb337d9e0ea459e041f1ee5eece41cbb61f1d83e7d883a3e2fb4862063fa AS builder
 
 WORKDIR /app
 
@@ -14,7 +15,8 @@ COPY ./ ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 
 # Final stage
-FROM alpine:latest
+# Resolved: 2026-04-06
+FROM alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
 
 RUN apk --no-cache add ca-certificates
 
