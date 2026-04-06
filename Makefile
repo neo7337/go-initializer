@@ -112,6 +112,21 @@ docker-logs: ## Tail logs from all docker-compose services
 .PHONY: docker-restart
 docker-restart: docker-down docker-up ## Rebuild images and restart all services
 
+# ── Docker image digest pinning ───────────────────────────────────────────────
+
+.PHONY: update-digests
+update-digests: ## Re-resolve and print current sha256 digests for all pinned base images
+	@echo "=== golang:1.25.8-alpine ==="
+	@docker buildx imagetools inspect golang:1.25.8-alpine --format '{{json .Manifest}}' | python3 -c "import sys,json; print(json.load(sys.stdin)['digest'])"
+	@echo "=== alpine:latest ==="
+	@docker buildx imagetools inspect alpine:latest --format '{{json .Manifest}}' | python3 -c "import sys,json; print(json.load(sys.stdin)['digest'])"
+	@echo "=== node:22-alpine ==="
+	@docker buildx imagetools inspect node:22-alpine --format '{{json .Manifest}}' | python3 -c "import sys,json; print(json.load(sys.stdin)['digest'])"
+	@echo "=== nginx:stable-alpine ==="
+	@docker buildx imagetools inspect nginx:stable-alpine --format '{{json .Manifest}}' | python3 -c "import sys,json; print(json.load(sys.stdin)['digest'])"
+	@echo ""
+	@echo "Update FROM lines in cmd/server/Dockerfile and frontend/Dockerfile with the above digests."
+
 # ── goini CLI helpers ─────────────────────────────────────────────────────────
 
 .PHONY: install-cli
