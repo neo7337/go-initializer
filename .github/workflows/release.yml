@@ -118,7 +118,49 @@ jobs:
             - name: Log out from Docker Hub
               run: docker logout
 
-    # Step 4: Cross-compile goini and publish to GitHub Release + Homebrew tap (paused)
+    # Step 4: Trivy vulnerability scan on built images
+    scan-images:
+        needs: [detect-changes, build-frontend, build-backend]
+        if: always() && (needs.build-frontend.result == 'success' || needs.build-backend.result == 'success')
+        runs-on: ubuntu-latest
+        permissions:
+            security-events: write
+        steps:
+            - name: Scan frontend image
+              if: needs.build-frontend.result == 'success'
+              uses: aquasecurity/trivy-action@0.35.0
+              with:
+                image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ needs.detect-changes.outputs.current_tag }}
+                format: sarif
+                output: trivy-frontend.sarif
+                severity: CRITICAL
+                exit-code: '1'
+
+            - name: Upload frontend SARIF to GitHub Code Scanning
+              if: always() && needs.build-frontend.result == 'success'
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: trivy-frontend.sarif
+                category: trivy-frontend
+
+            - name: Scan backend image
+              if: needs.build-backend.result == 'success'
+              uses: aquasecurity/trivy-action@0.35.0
+              with:
+                image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:${{ needs.detect-changes.outputs.current_tag }}
+                format: sarif
+                output: trivy-backend.sarif
+                severity: CRITICAL
+                exit-code: '1'
+
+            - name: Upload backend SARIF to GitHub Code Scanning
+              if: always() && needs.build-backend.result == 'success'
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: trivy-backend.sarif
+                category: trivy-backend
+
+    # Step 5: Cross-compile goini and publish to GitHub Release + Homebrew tap (paused)
     release-cli:
         if: false # paused — re-enable when CLI release is ready
         runs-on: ubuntu-latest
@@ -147,7 +189,7 @@ jobs:
                 HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
 
     create-summary:
-        needs: [detect-changes, build-frontend, build-backend, release-cli]
+        needs: [detect-changes, build-frontend, build-backend, scan-images, release-cli]
         runs-on: ubuntu-latest
         if: always() # Ensure this runs even if builds are skipped
         steps:
