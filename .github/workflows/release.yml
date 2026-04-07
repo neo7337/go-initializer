@@ -5,17 +5,21 @@ on:
         types: [published]
     workflow_dispatch:
 
+permissions: {}
+
 jobs:
     # Step 1: Detect which folders have changed
     detect-changes:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         outputs:
             frontend: ${{ steps.filter.outputs.frontend || steps.check-first.outputs.is_first }}
             backend: ${{ steps.filter.outputs.backend || steps.check-first.outputs.is_first }}
             current_tag: ${{ steps.get-tags.outputs.current_tag }}
         steps:
             - name: Checkout Code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
               with:
                 fetch-depth: 0
 
@@ -46,7 +50,7 @@ jobs:
                 fi
             
             - name: Check for file changes
-              uses: dorny/paths-filter@v3
+              uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # dorny/paths-filter@v3
               id: filter
               # We only run this if it's NOT the first release to avoid errors
               if: steps.check-first.outputs.is_first == 'false'
@@ -66,18 +70,20 @@ jobs:
         needs: detect-changes
         if: needs.detect-changes.outputs.frontend == 'true'
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - name: Checkout Code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
             
             - name: Log in to Docker Hub
-              uses: docker/login-action@v2
+              uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # docker/login-action@v2
               with:
                 username: ${{ secrets.DOCKERHUB_USERNAME }}
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
                 
             - name: Build and push frontend
-              uses: docker/build-push-action@v5
+              uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # docker/build-push-action@v5
               with:
                 context: ./frontend
                 push: true
@@ -95,18 +101,20 @@ jobs:
         needs: detect-changes
         if: needs.detect-changes.outputs.backend == 'true'
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - name: Checkout Code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
             
             - name: Log in to Docker Hub
-              uses: docker/login-action@v2
+              uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # docker/login-action@v2
               with:
                 username: ${{ secrets.DOCKERHUB_USERNAME }}
                 password: ${{ secrets.DOCKERHUB_PASSWORD }}
                 
             - name: Build and push backend
-              uses: docker/build-push-action@v5
+              uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # docker/build-push-action@v5
               with:
                 context: .
                 file: cmd/server/Dockerfile
@@ -128,7 +136,7 @@ jobs:
         steps:
             - name: Scan frontend image
               if: needs.build-frontend.result == 'success'
-              uses: aquasecurity/trivy-action@0.35.0
+              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # aquasecurity/trivy-action@0.35.0
               with:
                 image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer-web:${{ needs.detect-changes.outputs.current_tag }}
                 format: sarif
@@ -138,14 +146,14 @@ jobs:
 
             - name: Upload frontend SARIF to GitHub Code Scanning
               if: always() && needs.build-frontend.result == 'success'
-              uses: github/codeql-action/upload-sarif@v3
+              uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # github/codeql-action/upload-sarif@v3
               with:
                 sarif_file: trivy-frontend.sarif
                 category: trivy-frontend
 
             - name: Scan backend image
               if: needs.build-backend.result == 'success'
-              uses: aquasecurity/trivy-action@0.35.0
+              uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # aquasecurity/trivy-action@0.35.0
               with:
                 image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/goinitializer:${{ needs.detect-changes.outputs.current_tag }}
                 format: sarif
@@ -155,7 +163,7 @@ jobs:
 
             - name: Upload backend SARIF to GitHub Code Scanning
               if: always() && needs.build-backend.result == 'success'
-              uses: github/codeql-action/upload-sarif@v3
+              uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # github/codeql-action/upload-sarif@v3
               with:
                 sarif_file: trivy-backend.sarif
                 category: trivy-backend
@@ -168,18 +176,18 @@ jobs:
             contents: write
         steps:
             - name: Checkout Code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
               with:
                 fetch-depth: 0
 
             - name: Set up Go
-              uses: actions/setup-go@v5
+              uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # actions/setup-go@v5
               with:
                 go-version-file: go.mod
                 cache: true
 
             - name: Run goreleaser
-              uses: goreleaser/goreleaser-action@v6
+              uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # goreleaser/goreleaser-action@v6
               with:
                 distribution: goreleaser
                 version: latest
@@ -188,9 +196,22 @@ jobs:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
 
+            - name: Generate SBOM (SPDX)
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # anchore/sbom-action@v0
+              with:
+                format: spdx-json
+                artifact-name: sbom-spdx.json
+
+            - name: Generate SBOM (CycloneDX)
+              uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # anchore/sbom-action@v0
+              with:
+                format: cyclonedx-json
+                artifact-name: sbom-cyclonedx.json
+
     create-summary:
         needs: [detect-changes, build-frontend, build-backend, scan-images, release-cli]
         runs-on: ubuntu-latest
+        permissions: {}
         if: always() # Ensure this runs even if builds are skipped
         steps:
         - name: Generate Summary
