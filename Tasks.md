@@ -7,12 +7,12 @@ Tasks are grouped by priority and category. Each task includes context on why it
 **File:** `internal/generator/` (new file `gen_api_server.go`)
 **Why:** `api-server` is registered in `SupportedProjectTypesMap` and `SupportedFrameworksMap` but has no entry in `GeneratorRegistry`. Selecting it returns a runtime error. This is a broken promise in the README and the web UI.
 **Acceptance criteria:**
-- [ ] New `APIServerGenerator` struct implementing the `Generator` interface
-- [ ] Registered in `GeneratorRegistry` under `"api-server"`
-- [ ] Supports all five declared frameworks: `gin`, `echo`, `fiber`, `chi`, `golly`
-- [ ] Generated layout mirrors the microservice layout (handler, router, service layers)
-- [ ] All addons (cache, database, logging, AI, vectorstore) work with the new type
-- [ ] Unit tests added in `generators_test.go`
+- [x] New `APIServerGenerator` struct implementing the `Generator` interface
+- [x] Registered in `GeneratorRegistry` under `"api-server"`
+- [x] Supports all five declared frameworks: `gin`, `echo`, `fiber`, `chi`, `golly`
+- [x] Generated layout mirrors the microservice layout (handler, router, service layers)
+- [x] All addons (cache, database, logging, AI, vectorstore) work with the new type
+- [x] Unit tests added in `generators_test.go`
 ---
 ## Priority 2 — High Impact / Competitive Gap
 ### T-002: Add gRPC / protobuf project scaffold
