@@ -1,6 +1,6 @@
 module github.com/neo7337/go-initializer
 
-go 1.25.0
+go 1.26.2
 
 require (
 	github.com/dave/jennifer v1.7.1
