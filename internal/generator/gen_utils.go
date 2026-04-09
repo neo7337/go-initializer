@@ -59,7 +59,7 @@ func ValidateModuleName(moduleName string) error {
 // addToZip writes content into a new zip entry at path, eliminating the
 // repeated create-then-write boilerplate across all generators.
 func addToZip(zw *zip.Writer, path string, content []byte) error {
-	f, err := zw.Create(path)
+	f, err := zw.Create(path) // #nosec G305 -- zip.Writer.Create writes entries into an archive, never extracts; zip-slip does not apply.
 	if err != nil {
 		return fmt.Errorf("failed to create %s in zip: %w", path, err)
 	}
