@@ -168,9 +168,8 @@ jobs:
                 sarif_file: trivy-backend.sarif
                 category: trivy-backend
 
-    # Step 5: Cross-compile goini and publish to GitHub Release + Homebrew tap (paused)
+    # Step 5: Cross-compile goini and publish to GitHub Release + Homebrew tap
     release-cli:
-        if: false # paused — re-enable when CLI release is ready
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -234,6 +233,8 @@ jobs:
             
             if [ "${{ needs.release-cli.result }}" == "success" ]; then
                 echo "| CLI (goini) | ✅ Released via goreleaser |" >> $GITHUB_STEP_SUMMARY
+            elif [ "${{ needs.release-cli.result }}" == "skipped" ]; then
+                echo "| CLI (goini) | ⏩ Skipped |" >> $GITHUB_STEP_SUMMARY
             else
                 echo "| CLI (goini) | ❌ goreleaser failed |" >> $GITHUB_STEP_SUMMARY
             fi
