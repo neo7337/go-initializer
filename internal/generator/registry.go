@@ -22,6 +22,7 @@ var GeneratorRegistry = map[string]Generator{
 	"simple-project": &SimpleProjectGenerator{},
 	"microservice":   &MicroserviceGenerator{},
 	"cli-app":        &CLIAppGenerator{},
+	"api-server":     &APIServerGenerator{},
 	"ai-agent":       &AIAgentGenerator{},
 }
 

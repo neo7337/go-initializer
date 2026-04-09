@@ -453,16 +453,10 @@ func TestCLIAppGenerator_EmptyNameDefaultsToMycli(t *testing.T) {
 // ─── Registry coverage ───────────────────────────────────────────────────────
 
 func TestGeneratorRegistry_KnownTypesRegistered(t *testing.T) {
-	for _, typ := range []string{"simple-project", "microservice", "cli-app"} {
+	for _, typ := range []string{"simple-project", "microservice", "cli-app", "api-server", "ai-agent"} {
 		_, ok := GeneratorRegistry[typ]
 		assert.True(t, ok, "expected %q to be in GeneratorRegistry", typ)
 	}
-}
-
-func TestGeneratorRegistry_APIServerNotRegistered(t *testing.T) {
-	// api-server is in the validation allowlist but not yet implemented
-	_, ok := GeneratorRegistry["api-server"]
-	assert.False(t, ok, "api-server should not be in GeneratorRegistry yet")
 }
 
 // ─── GoMod correctness via generator ─────────────────────────────────────────
@@ -504,6 +498,7 @@ func TestGenerators_AllEntryPathsAreRelative(t *testing.T) {
 		"simple-project": {ProjectType: "simple-project", GoVersion: "1.24.6", Framework: "golly", ModuleName: "m", Name: "safe"},
 		"microservice":   {ProjectType: "microservice", GoVersion: "1.24.6", Framework: "gin", ModuleName: "m", Name: "safe"},
 		"cli-app":        {ProjectType: "cli-app", GoVersion: "1.24.6", Framework: "cobra", ModuleName: "m", Name: "safe"},
+		"api-server":     {ProjectType: "api-server", GoVersion: "1.24.6", Framework: "gin", ModuleName: "m", Name: "safe"},
 	}
 	for typ, req := range generators {
 		t.Run(typ, func(t *testing.T) {
@@ -516,4 +511,218 @@ func TestGenerators_AllEntryPathsAreRelative(t *testing.T) {
 			}
 		})
 	}
+}
+
+// ─── APIServerGenerator ──────────────────────────────────────────────────────
+
+var apiServerFrameworks = []string{"golly", "gin", "echo", "fiber", "chi"}
+
+func TestAPIServerGenerator_RequiredFiles(t *testing.T) {
+	for _, fw := range apiServerFrameworks {
+		t.Run(fw, func(t *testing.T) {
+			req := CreateProjectRequest{
+				ProjectType: "api-server",
+				GoVersion:   "1.24.6",
+				Framework:   fw,
+				ModuleName:  "github.com/acme/api",
+				Name:        "api",
+			}
+			buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+			require.NoError(t, err)
+			entries := zipEntries(t, buf)
+
+			hasEntry(t, entries, "api/README.md")
+			hasEntry(t, entries, "api/go.mod")
+			hasEntry(t, entries, "api/cmd/api/main.go")
+			hasEntry(t, entries, "api/internal/handler/handler.go")
+			hasEntry(t, entries, "api/internal/router/router.go")
+			hasEntry(t, entries, "api/internal/service/service.go")
+			hasEntry(t, entries, "api/Makefile")
+			hasEntry(t, entries, "api/.gitignore")
+		})
+	}
+}
+
+func TestAPIServerGenerator_MainPackageIsMain(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "gin",
+		ModuleName:  "github.com/acme/api",
+		Name:        "api",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	main := hasEntry(t, entries, "api/cmd/api/main.go")
+	assert.Contains(t, main, "package main")
+}
+
+func TestAPIServerGenerator_WithDocker(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "api-server",
+		GoVersion:     "1.24.6",
+		Framework:     "chi",
+		ModuleName:    "github.com/acme/api",
+		Name:          "api",
+		DockerSupport: true,
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "api/Dockerfile")
+}
+
+func TestAPIServerGenerator_WithoutDocker(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "api-server",
+		GoVersion:     "1.24.6",
+		Framework:     "chi",
+		ModuleName:    "github.com/acme/api",
+		Name:          "api",
+		DockerSupport: false,
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	_, ok := entries["api/Dockerfile"]
+	assert.False(t, ok, "Dockerfile should not be included when DockerSupport=false")
+}
+
+func TestAPIServerGenerator_GoModContainsFrameworkDep(t *testing.T) {
+	cases := map[string]string{
+		"gin":   "github.com/gin-gonic/gin",
+		"echo":  "github.com/labstack/echo",
+		"fiber": "github.com/gofiber/fiber",
+		"chi":   "github.com/go-chi/chi",
+	}
+	for fw, dep := range cases {
+		t.Run(fw, func(t *testing.T) {
+			req := CreateProjectRequest{
+				ProjectType: "api-server",
+				GoVersion:   "1.24.6",
+				Framework:   fw,
+				ModuleName:  "github.com/acme/api",
+				Name:        "api",
+			}
+			buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+			require.NoError(t, err)
+			entries := zipEntries(t, buf)
+			gomod := hasEntry(t, entries, "api/go.mod")
+			assert.Contains(t, gomod, dep)
+		})
+	}
+}
+
+func TestAPIServerGenerator_WithCacheAddon(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "gin",
+		ModuleName:  "github.com/acme/api",
+		Name:        "api",
+		Addons:      map[string][]string{"cache": {"redis"}},
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	content := hasEntry(t, entries, "api/internal/cache/cache.go")
+	assert.Contains(t, content, "NewRedisClient")
+}
+
+func TestAPIServerGenerator_WithDatabaseAddon(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "echo",
+		ModuleName:  "github.com/acme/api",
+		Name:        "api",
+		Addons:      map[string][]string{"database": {"gorm"}},
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	content := hasEntry(t, entries, "api/internal/database/database.go")
+	assert.Contains(t, content, "NewGormDB")
+}
+
+func TestAPIServerGenerator_WithLoggingAddon(t *testing.T) {
+	for _, addon := range []string{"zap", "logrus"} {
+		t.Run(addon, func(t *testing.T) {
+			req := CreateProjectRequest{
+				ProjectType: "api-server",
+				GoVersion:   "1.24.6",
+				Framework:   "fiber",
+				ModuleName:  "github.com/acme/api",
+				Name:        "api",
+				Addons:      map[string][]string{"other": {addon}},
+			}
+			buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+			require.NoError(t, err)
+			entries := zipEntries(t, buf)
+			content := hasEntry(t, entries, "api/internal/logger/logger.go")
+			assert.Contains(t, content, addon)
+		})
+	}
+}
+
+func TestAPIServerGenerator_ServiceStubContainsName(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "chi",
+		ModuleName:  "github.com/acme/orders",
+		Name:        "orders",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	svc := hasEntry(t, entries, "orders/internal/service/service.go")
+	assert.Contains(t, svc, "OrdersService")
+}
+
+func TestAPIServerGenerator_MakefileUsesCmdPkg(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "gin",
+		ModuleName:  "github.com/acme/api",
+		Name:        "api",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	mk := hasEntry(t, entries, "api/Makefile")
+	assert.Contains(t, mk, "MAIN_PKG=./cmd/api")
+}
+
+func TestAPIServerGenerator_EmptyNameDefaultsToMyapiserver(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "gin",
+		ModuleName:  "github.com/acme/myapiserver",
+		Name:        "",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "myapiserver/README.md")
+}
+
+func TestAPIServerGenerator_ReadmeContainsNameAndDescription(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "gin",
+		ModuleName:  "github.com/acme/myapi",
+		Name:        "myapi",
+		Description: "a REST API server",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	readme := hasEntry(t, entries, "myapi/README.md")
+	assert.Contains(t, readme, "myapi")
+	assert.Contains(t, readme, "a REST API server")
 }
