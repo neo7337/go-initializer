@@ -1,6 +1,6 @@
 # Backend Dockerfile
-# Resolved: 2026-04-06
-FROM golang:1.25.8-alpine@sha256:8e02eb337d9e0ea459e041f1ee5eece41cbb61f1d83e7d883a3e2fb4862063fa AS builder
+# Resolved: 2026-04-09
+FROM golang:1.26.2-alpine@sha256:c2a1f7b2095d046ae14b286b18413a05bb82c9bca9b25fe7ff5efef0f0826166 AS builder
 
 WORKDIR /app
 
