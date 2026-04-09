@@ -139,11 +139,15 @@ func printSuccess(cmd *cobra.Command, name, projectType, outDir string) {
 	}
 }
 
+// maxExtractSize is the maximum number of bytes copied from a single zip entry
+// to guard against decompression bombs (G110).
+const maxExtractSize = 100 * 1024 * 1024 // 100 MiB
+
 // extractZip extracts all entries from buf into outDir, stripping the first
 // path component of each zip entry (the generator always nests files under a
 // top-level <name>/ folder).
 //
-// Guard against zip-slip: any entry resolving outside outDir is rejected.
+// os.Root scopes every file operation to outDir, preventing directory traversal.
 func extractZip(buf *bytes.Buffer, outDir string) error {
 	r, err := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 	if err != nil {
@@ -151,11 +155,16 @@ func extractZip(buf *bytes.Buffer, outDir string) error {
 	}
 
 	// Ensure the output directory exists.
-	if err := os.MkdirAll(outDir, 0o755); err != nil {
+	if err := os.MkdirAll(outDir, 0o750); err != nil {
 		return fmt.Errorf("create output directory: %w", err)
 	}
 
-	cleanOut := filepath.Clean(outDir)
+	// OpenRoot scopes all subsequent writes to outDir; no path can escape it.
+	root, err := os.OpenRoot(outDir)
+	if err != nil {
+		return fmt.Errorf("open output root: %w", err)
+	}
+	defer root.Close()
 
 	for _, f := range r.File {
 		// Strip the leading path component (e.g. "myapp/cmd/main.go" → "cmd/main.go").
@@ -165,45 +174,44 @@ func extractZip(buf *bytes.Buffer, outDir string) error {
 			continue
 		}
 
-		// Resolve destination and guard against zip-slip.
-		dest := filepath.Join(cleanOut, filepath.FromSlash(stripped))
-		if !strings.HasPrefix(filepath.Clean(dest)+string(os.PathSeparator), cleanOut+string(os.PathSeparator)) {
-			return fmt.Errorf("zip entry %q would escape output directory", f.Name)
-		}
+		entryPath := filepath.FromSlash(stripped)
 
 		if f.FileInfo().IsDir() {
-			if err := os.MkdirAll(dest, f.Mode()); err != nil {
+			if err := root.MkdirAll(entryPath, 0o750); err != nil {
 				return err
 			}
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
-			return err
+		if dir := filepath.Dir(entryPath); dir != "." {
+			if err := root.MkdirAll(dir, 0o750); err != nil {
+				return err
+			}
 		}
 
-		if err := writeZipEntry(f, dest); err != nil {
+		if err := writeZipEntry(f, root, entryPath); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// writeZipEntry writes a single zip file entry to dest on disk.
-func writeZipEntry(f *zip.File, dest string) error {
+// writeZipEntry writes a single zip file entry into root at entryPath.
+// The copy is capped at maxExtractSize to prevent decompression bombs.
+func writeZipEntry(f *zip.File, root *os.Root, entryPath string) error {
 	rc, err := f.Open()
 	if err != nil {
 		return err
 	}
 	defer rc.Close()
 
-	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
+	out, err := root.OpenFile(entryPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, rc)
+	_, err = io.Copy(out, io.LimitReader(rc, maxExtractSize))
 	return err
 }
 
