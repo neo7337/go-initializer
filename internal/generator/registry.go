@@ -64,6 +64,7 @@ var SupportedFrameworksMap = map[string]map[string]bool{
 		"echo":  true,
 		"fiber": true,
 		"gokit": true,
+		"grpc":  true,
 	},
 	"cli-app": {
 		"golly":   true,
@@ -77,6 +78,7 @@ var SupportedFrameworksMap = map[string]map[string]bool{
 		"echo":  true,
 		"fiber": true,
 		"chi":   true,
+		"grpc":  true,
 	},
 	"simple-project": {
 		"golly": true,
@@ -143,4 +145,5 @@ var DependencyMap = map[string][]string{
 	"pgvector":    {"github.com/pgvector/pgvector-go v0.2.2"},
 	"chromem":     {"github.com/philippgille/chromem-go v0.7.0"},
 	"qdrant":      {"github.com/qdrant/go-client v1.13.0"},
+	"grpc":        {"google.golang.org/grpc v1.71.1", "google.golang.org/protobuf v1.36.6"},
 }

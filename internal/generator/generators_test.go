@@ -726,3 +726,265 @@ func TestAPIServerGenerator_ReadmeContainsNameAndDescription(t *testing.T) {
 	assert.Contains(t, readme, "myapi")
 	assert.Contains(t, readme, "a REST API server")
 }
+
+// ─── gRPC generator (microservice + api-server) ──────────────────────────────
+
+func TestGRPC_MicroserviceRequiredFiles(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+
+	hasEntry(t, entries, "svc/README.md")
+	hasEntry(t, entries, "svc/go.mod")
+	hasEntry(t, entries, "svc/cmd/svc/main.go")
+	hasEntry(t, entries, "svc/internal/server/server.go")
+	hasEntry(t, entries, "svc/proto/svc.proto")
+	hasEntry(t, entries, "svc/buf.yaml")
+	hasEntry(t, entries, "svc/buf.gen.yaml")
+	hasEntry(t, entries, "svc/Makefile")
+	hasEntry(t, entries, "svc/.gitignore")
+}
+
+func TestGRPC_APIServerRequiredFiles(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "api-server",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/api",
+		Name:        "api",
+	}
+	buf, err := GeneratorRegistry["api-server"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+
+	hasEntry(t, entries, "api/README.md")
+	hasEntry(t, entries, "api/go.mod")
+	hasEntry(t, entries, "api/cmd/api/main.go")
+	hasEntry(t, entries, "api/internal/server/server.go")
+	hasEntry(t, entries, "api/proto/api.proto")
+	hasEntry(t, entries, "api/buf.yaml")
+	hasEntry(t, entries, "api/buf.gen.yaml")
+	hasEntry(t, entries, "api/Makefile")
+	hasEntry(t, entries, "api/.gitignore")
+}
+
+func TestGRPC_MainImportsGRPCDeps(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	main := hasEntry(t, entries, "svc/cmd/svc/main.go")
+	assert.Contains(t, main, "google.golang.org/grpc")
+	assert.Contains(t, main, "grpc_health_v1")
+	assert.Contains(t, main, "reflection")
+	assert.Contains(t, main, "package main")
+}
+
+func TestGRPC_ServerImplementsHealthCheck(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	srv := hasEntry(t, entries, "svc/internal/server/server.go")
+	assert.Contains(t, srv, "HealthServer")
+	assert.Contains(t, srv, "grpc_health_v1.UnimplementedHealthServer")
+	assert.Contains(t, srv, "Check")
+	assert.Contains(t, srv, "Watch")
+}
+
+func TestGRPC_ProtoFileContainsGreeterService(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	proto := hasEntry(t, entries, "svc/proto/svc.proto")
+	assert.Contains(t, proto, `syntax = "proto3"`)
+	assert.Contains(t, proto, "GreeterService")
+	assert.Contains(t, proto, "SayHello")
+	assert.Contains(t, proto, "go_package")
+}
+
+func TestGRPC_GoModContainsGRPCDeps(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	gomod := hasEntry(t, entries, "svc/go.mod")
+	assert.Contains(t, gomod, "google.golang.org/grpc")
+	assert.Contains(t, gomod, "google.golang.org/protobuf")
+}
+
+func TestGRPC_MakefileContainsProtoTarget(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	makefile := hasEntry(t, entries, "svc/Makefile")
+	assert.Contains(t, makefile, "proto:")
+	assert.Contains(t, makefile, "buf generate")
+}
+
+func TestGRPC_BufYamlVersion(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	bufYaml := hasEntry(t, entries, "svc/buf.yaml")
+	assert.Contains(t, bufYaml, "version: v2")
+	assert.Contains(t, bufYaml, "path: proto")
+}
+
+func TestGRPC_BufGenYamlPlugins(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	bufGenYaml := hasEntry(t, entries, "svc/buf.gen.yaml")
+	assert.Contains(t, bufGenYaml, "buf.build/protocolbuffers/go")
+	assert.Contains(t, bufGenYaml, "buf.build/grpc/go")
+	assert.Contains(t, bufGenYaml, "out: gen")
+}
+
+func TestGRPC_GitignoreExcludesGenDir(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	gitignore := hasEntry(t, entries, "svc/.gitignore")
+	assert.Contains(t, gitignore, "gen/")
+}
+
+func TestGRPC_ReadmeExplainsBufGenerate(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+		Description: "my grpc service",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	readme := hasEntry(t, entries, "svc/README.md")
+	assert.Contains(t, readme, "buf generate")
+	assert.Contains(t, readme, "svc")
+	assert.Contains(t, readme, "my grpc service")
+}
+
+func TestGRPC_WithDockerSupport(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "microservice",
+		GoVersion:     "1.24.6",
+		Framework:     "grpc",
+		ModuleName:    "github.com/acme/svc",
+		Name:          "svc",
+		DockerSupport: true,
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "svc/Dockerfile")
+}
+
+func TestGRPC_WithoutDockerSupport(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "microservice",
+		GoVersion:     "1.24.6",
+		Framework:     "grpc",
+		ModuleName:    "github.com/acme/svc",
+		Name:          "svc",
+		DockerSupport: false,
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	_, ok := entries["svc/Dockerfile"]
+	assert.False(t, ok, "Dockerfile should not be included when DockerSupport=false")
+}
+
+func TestGRPC_WithCacheAddon(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/svc",
+		Name:        "svc",
+		Addons:      map[string][]string{"cache": {"redis"}},
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "svc/internal/cache/cache.go")
+}
+
+func TestGRPC_HyphenatedNameProtoPackage(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "microservice",
+		GoVersion:   "1.24.6",
+		Framework:   "grpc",
+		ModuleName:  "github.com/acme/my-service",
+		Name:        "my-service",
+	}
+	buf, err := GeneratorRegistry["microservice"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	proto := hasEntry(t, entries, "my-service/proto/my-service.proto")
+	// Proto package name must use underscores, not hyphens
+	assert.Contains(t, proto, "package my_service.v1")
+}
