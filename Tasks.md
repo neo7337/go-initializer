@@ -18,12 +18,12 @@ Tasks are grouped by priority and category. Each task includes context on why it
 ### T-002: Add gRPC / protobuf project scaffold
 **Why:** gRPC is the dominant microservice-to-microservice transport in Go. Absence is a major competitive gap vs. tools like `buf`. No other Go scaffolder covers this well.
 **Acceptance criteria:**
-- [ ] New framework option `grpc` under `microservice` and `api-server` project types
-- [ ] Generated layout includes a sample `.proto` file, a `buf.yaml`, and `buf.gen.yaml`
-- [ ] Generated `server.go` registers a gRPC server with a health check service
-- [ ] `go.mod` wired with `google.golang.org/grpc` and `google.golang.org/protobuf`
-- [ ] Makefile includes a `proto` target that runs `buf generate`
-- [ ] README explains the `buf generate` step
+- [x] New framework option `grpc` under `microservice` and `api-server` project types
+- [x] Generated layout includes a sample `.proto` file, a `buf.yaml`, and `buf.gen.yaml`
+- [x] Generated `server.go` registers a gRPC server with a health check service
+- [x] `go.mod` wired with `google.golang.org/grpc` and `google.golang.org/protobuf`
+- [x] Makefile includes a `proto` target that runs `buf generate`
+- [x] README explains the `buf generate` step
 ### T-003: Add Connect (connectrpc.com) framework support
 **Why:** Connect is the modern HTTP/1.1 + HTTP/2 gRPC-compatible protocol gaining rapid adoption in 2024-25. Used at Buf, PlanetScale, and others.
 **Acceptance criteria:**

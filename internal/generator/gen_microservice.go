@@ -44,6 +44,19 @@ func (g *MicroserviceGenerator) Generate(ctx context.Context, request CreateProj
 
 	folderName := request.Name
 
+	// gRPC projects use a different layout — delegate to the shared gRPC generator.
+	if request.Framework == "grpc" {
+		if err := generateGRPCProject(ctx, request, zipWriter); err != nil {
+			log.Printf("[ERROR] %v", err)
+			return nil, err
+		}
+		if err := zipWriter.Close(); err != nil {
+			log.Printf("[ERROR] Failed to close zip writer: %v", err)
+			return nil, fmt.Errorf("failed to finalize zip: %w", err)
+		}
+		return buf, nil
+	}
+
 	// README.md
 	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), []byte(readmeContent)); err != nil {
