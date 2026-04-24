@@ -499,6 +499,7 @@ func TestGenerators_AllEntryPathsAreRelative(t *testing.T) {
 		"microservice":   {ProjectType: "microservice", GoVersion: "1.24.6", Framework: "gin", ModuleName: "m", Name: "safe"},
 		"cli-app":        {ProjectType: "cli-app", GoVersion: "1.24.6", Framework: "cobra", ModuleName: "m", Name: "safe"},
 		"api-server":     {ProjectType: "api-server", GoVersion: "1.24.6", Framework: "gin", ModuleName: "m", Name: "safe"},
+		"ai-agent":       {ProjectType: "ai-agent", GoVersion: "1.24.6", Framework: "openai", ModuleName: "m", Name: "safe"},
 	}
 	for typ, req := range generators {
 		t.Run(typ, func(t *testing.T) {
@@ -987,4 +988,189 @@ func TestGRPC_HyphenatedNameProtoPackage(t *testing.T) {
 	proto := hasEntry(t, entries, "my-service/proto/my-service.proto")
 	// Proto package name must use underscores, not hyphens
 	assert.Contains(t, proto, "package my_service.v1")
+}
+
+// ─── AIAgentGenerator ────────────────────────────────────────────────────────
+
+var aiAgentFrameworks = []string{"langchaingo", "openai", "gemini", "ollama"}
+
+func TestAIAgentGenerator_RequiredFiles(t *testing.T) {
+	for _, fw := range aiAgentFrameworks {
+		t.Run(fw, func(t *testing.T) {
+			req := CreateProjectRequest{
+				ProjectType: "ai-agent",
+				GoVersion:   "1.24.6",
+				Framework:   fw,
+				ModuleName:  "github.com/acme/agent",
+				Name:        "agent",
+			}
+			buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+			require.NoError(t, err)
+			entries := zipEntries(t, buf)
+
+			hasEntry(t, entries, "agent/README.md")
+			hasEntry(t, entries, "agent/go.mod")
+			hasEntry(t, entries, "agent/main.go")
+			hasEntry(t, entries, "agent/agent/agent.go")
+			hasEntry(t, entries, "agent/tools/tools.go")
+			hasEntry(t, entries, "agent/llm/client.go")
+			hasEntry(t, entries, "agent/Makefile")
+			hasEntry(t, entries, "agent/.gitignore")
+			hasEntry(t, entries, "agent/agent/agent_test.go")
+		})
+	}
+}
+
+func TestAIAgentGenerator_ReadmeContainsFrameworkAndName(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "ai-agent",
+		GoVersion:   "1.24.6",
+		Framework:   "openai",
+		ModuleName:  "github.com/acme/myagent",
+		Name:        "myagent",
+		Description: "an intelligent assistant",
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	readme := hasEntry(t, entries, "myagent/README.md")
+	assert.Contains(t, readme, "myagent")
+	assert.Contains(t, readme, "an intelligent assistant")
+	assert.Contains(t, readme, "openai")
+}
+
+func TestAIAgentGenerator_WithDocker(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "ai-agent",
+		GoVersion:     "1.24.6",
+		Framework:     "openai",
+		ModuleName:    "github.com/acme/agent",
+		Name:          "agent",
+		DockerSupport: true,
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "agent/Dockerfile")
+}
+
+func TestAIAgentGenerator_WithoutDocker(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "ai-agent",
+		GoVersion:     "1.24.6",
+		Framework:     "openai",
+		ModuleName:    "github.com/acme/agent",
+		Name:          "agent",
+		DockerSupport: false,
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	_, hasDocker := entries["agent/Dockerfile"]
+	assert.False(t, hasDocker, "Dockerfile should not be present when DockerSupport=false")
+}
+
+func TestAIAgentGenerator_OpenAIEnvExample(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "ai-agent",
+		GoVersion:   "1.24.6",
+		Framework:   "openai",
+		ModuleName:  "github.com/acme/agent",
+		Name:        "agent",
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	env := hasEntry(t, entries, "agent/.env.example")
+	assert.Contains(t, env, "OPENAI_API_KEY")
+}
+
+func TestAIAgentGenerator_GeminiEnvExample(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "ai-agent",
+		GoVersion:   "1.24.6",
+		Framework:   "gemini",
+		ModuleName:  "github.com/acme/agent",
+		Name:        "agent",
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	env := hasEntry(t, entries, "agent/.env.example")
+	assert.Contains(t, env, "GEMINI_API_KEY")
+}
+
+func TestAIAgentGenerator_OllamaNoEnvExample(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "ai-agent",
+		GoVersion:   "1.24.6",
+		Framework:   "ollama",
+		ModuleName:  "github.com/acme/agent",
+		Name:        "agent",
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	_, hasEnv := entries["agent/.env.example"]
+	assert.False(t, hasEnv, ".env.example should not be present for ollama (no API key needed)")
+}
+
+func TestAIAgentGenerator_GoModContainsFrameworkDep(t *testing.T) {
+	cases := []struct {
+		framework string
+		dep       string
+	}{
+		{"langchaingo", "github.com/tmc/langchaingo"},
+		{"openai", "github.com/openai/openai-go"},
+		{"gemini", "github.com/google/generative-ai-go"},
+		{"ollama", "github.com/ollama/ollama"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.framework, func(t *testing.T) {
+			req := CreateProjectRequest{
+				ProjectType: "ai-agent",
+				GoVersion:   "1.24.6",
+				Framework:   tc.framework,
+				ModuleName:  "github.com/acme/agent",
+				Name:        "agent",
+			}
+			buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+			require.NoError(t, err)
+			entries := zipEntries(t, buf)
+			gomod := hasEntry(t, entries, "agent/go.mod")
+			assert.Contains(t, gomod, tc.dep)
+		})
+	}
+}
+
+func TestAIAgentGenerator_DockerfileUsesBuildRoot(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType:   "ai-agent",
+		GoVersion:     "1.24.6",
+		Framework:     "openai",
+		ModuleName:    "github.com/acme/myagent",
+		Name:          "myagent",
+		DockerSupport: true,
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	dockerfile := hasEntry(t, entries, "myagent/Dockerfile")
+	// ai-agent uses root "." as build target
+	assert.Contains(t, dockerfile, "go build -o myagent .")
+}
+
+func TestAIAgentGenerator_WithVectorStoreAddon(t *testing.T) {
+	req := CreateProjectRequest{
+		ProjectType: "ai-agent",
+		GoVersion:   "1.24.6",
+		Framework:   "openai",
+		ModuleName:  "github.com/acme/agent",
+		Name:        "agent",
+		Addons:      map[string][]string{"vectorstore": {"pgvector"}},
+	}
+	buf, err := GeneratorRegistry["ai-agent"].Generate(context.Background(), req)
+	require.NoError(t, err)
+	entries := zipEntries(t, buf)
+	hasEntry(t, entries, "agent/internal/vectorstore/store.go")
 }
