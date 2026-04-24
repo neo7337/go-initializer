@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -102,7 +103,15 @@ func runNew(cmd *cobra.Command, opts *newOpts) error {
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Generating %s project…\n", req.ProjectType)
 
-	zipBuf, err := gen.Generate(cmd.Context(), req)
+	// cmd.Context() may be nil in tests that construct a bare *cobra.Command;
+	// fall back to context.Background() to avoid a nil-pointer dereference inside
+	// the generator.
+	cmdCtx := cmd.Context()
+	if cmdCtx == nil {
+		cmdCtx = context.Background()
+	}
+
+	zipBuf, err := gen.Generate(cmdCtx, req)
 	if err != nil {
 		return fmt.Errorf("generation failed: %w", err)
 	}
@@ -178,6 +187,9 @@ func extractZip(buf *bytes.Buffer, outDir string) error {
 
 		if f.FileInfo().IsDir() {
 			if err := root.MkdirAll(entryPath, 0o750); err != nil {
+				if strings.Contains(err.Error(), "escapes") || strings.Contains(err.Error(), "escape") {
+					return fmt.Errorf("would escape output directory: %w", err)
+				}
 				return err
 			}
 			continue
@@ -185,11 +197,19 @@ func extractZip(buf *bytes.Buffer, outDir string) error {
 
 		if dir := filepath.Dir(entryPath); dir != "." {
 			if err := root.MkdirAll(dir, 0o750); err != nil {
+				if strings.Contains(err.Error(), "escapes") || strings.Contains(err.Error(), "escape") {
+					return fmt.Errorf("would escape output directory: %w", err)
+				}
 				return err
 			}
 		}
 
 		if err := writeZipEntry(f, root, entryPath); err != nil {
+			// os.Root rejects paths that escape the root directory; surface a
+			// clear message so callers can identify zip-slip attempts.
+			if strings.Contains(err.Error(), "escapes") || strings.Contains(err.Error(), "escape") {
+				return fmt.Errorf("would escape output directory: %w", err)
+			}
 			return err
 		}
 	}
