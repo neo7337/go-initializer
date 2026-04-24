@@ -330,9 +330,9 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 	// the correct framework list is shown whether projectType came from a flag
 	// or was chosen in Group 1.
 	var (
-		cacheAddons []string
-		dbAddons    []string
-		otherAddons []string
+		cacheAddon string
+		dbAddon    string
+		otherAddon string
 		// Prompt for addons only when neither --addon flag was set AND stdin is
 		// a TTY; in non-TTY / fully-flagged CI runs default to no addons.
 		promptAddons = !cmd.Flags().Changed("addon") && isTTY
@@ -350,22 +350,25 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 
 	if promptAddons {
 		if cacheOpts := buildSelectOpts(generator.SupportedAddonsMap["cache"]); len(cacheOpts) > 0 {
-			group2 = append(group2, huh.NewMultiSelect[string]().
-				Title("Cache addons").
-				Options(cacheOpts...).
-				Value(&cacheAddons))
+			group2 = append(group2, huh.NewSelect[string]().
+				Title("Cache addon").
+				Description("Select one, or 'none' to skip").
+				Options(append([]huh.Option[string]{huh.NewOption("none", "")}, cacheOpts...)...).
+				Value(&cacheAddon))
 		}
 		if dbOpts := buildSelectOpts(generator.SupportedAddonsMap["database"]); len(dbOpts) > 0 {
-			group2 = append(group2, huh.NewMultiSelect[string]().
-				Title("Database addons").
-				Options(dbOpts...).
-				Value(&dbAddons))
+			group2 = append(group2, huh.NewSelect[string]().
+				Title("Database addon").
+				Description("Select one, or 'none' to skip").
+				Options(append([]huh.Option[string]{huh.NewOption("none", "")}, dbOpts...)...).
+				Value(&dbAddon))
 		}
 		if otherOpts := buildSelectOpts(generator.SupportedAddonsMap["other"]); len(otherOpts) > 0 {
-			group2 = append(group2, huh.NewMultiSelect[string]().
-				Title("Other addons").
-				Options(otherOpts...).
-				Value(&otherAddons))
+			group2 = append(group2, huh.NewSelect[string]().
+				Title("Other addon").
+				Description("Select one, or 'none' to skip").
+				Options(append([]huh.Option[string]{huh.NewOption("none", "")}, otherOpts...)...).
+				Value(&otherAddon))
 		}
 	}
 
@@ -401,14 +404,14 @@ func promptMissing(cmd *cobra.Command, opts *newOpts) error {
 	// Merge interactively collected addons back into opts.addons so that the
 	// downstream parseAddons call handles everything uniformly.
 	if promptAddons {
-		for _, a := range cacheAddons {
-			opts.addons = append(opts.addons, "cache="+a)
+		if cacheAddon != "" {
+			opts.addons = append(opts.addons, "cache="+cacheAddon)
 		}
-		for _, a := range dbAddons {
-			opts.addons = append(opts.addons, "database="+a)
+		if dbAddon != "" {
+			opts.addons = append(opts.addons, "database="+dbAddon)
 		}
-		for _, a := range otherAddons {
-			opts.addons = append(opts.addons, "other="+a)
+		if otherAddon != "" {
+			opts.addons = append(opts.addons, "other="+otherAddon)
 		}
 	}
 
@@ -475,7 +478,10 @@ func parseAddons(raw []string) (map[string][]string, error) {
 		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 			return nil, fmt.Errorf("invalid --addon value %q: expected category=value (e.g. --addon cache=redis)", entry)
 		}
-		result[parts[0]] = append(result[parts[0]], parts[1])
+		if _, exists := result[parts[0]]; exists {
+			return nil, fmt.Errorf("addon category %q specified more than once; only one addon per category is allowed", parts[0])
+		}
+		result[parts[0]] = []string{parts[1]}
 	}
 	return result, nil
 }

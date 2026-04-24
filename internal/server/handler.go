@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -50,6 +51,16 @@ func GenerateHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	for category, values := range request.Addons {
+		if len(values) > 1 {
+			log.Printf("[WARN] Multiple addons for category %q: %v", category, values)
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("addon category %q allows at most one selection", category),
+			})
+			return
+		}
+	}
+
 	log.Printf("[INFO] Received request: projectType=%s name=%s moduleName=%s goVersion=%s framework=%s",
 		request.ProjectType, request.Name, request.ModuleName, request.GoVersion, request.Framework)
 

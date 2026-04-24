@@ -35,15 +35,25 @@ func makeRunNewCmd() *cobra.Command {
 	return cmd
 }
 
-func TestParseAddons_ValidAndRepeatCategories(t *testing.T) {
-	in := []string{"cache=redis", "database=gorm", "cache=memcached"}
+func TestParseAddons_SingleAddonPerCategory(t *testing.T) {
+	in := []string{"cache=redis", "database=gorm", "other=zap"}
 	out, err := parseAddons(in)
 	require.NoError(t, err)
 
 	require.Contains(t, out, "cache")
 	require.Contains(t, out, "database")
-	assert.ElementsMatch(t, []string{"redis", "memcached"}, out["cache"])
+	require.Contains(t, out, "other")
+	assert.Equal(t, []string{"redis"}, out["cache"])
 	assert.Equal(t, []string{"gorm"}, out["database"])
+	assert.Equal(t, []string{"zap"}, out["other"])
+}
+
+func TestParseAddons_DuplicateCategoryReturnsError(t *testing.T) {
+	in := []string{"cache=redis", "database=gorm", "cache=memcached"}
+	_, err := parseAddons(in)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "cache")
+	assert.Contains(t, err.Error(), "more than once")
 }
 
 func TestParseAddons_InvalidFormat(t *testing.T) {

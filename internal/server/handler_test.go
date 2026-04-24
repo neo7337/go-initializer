@@ -367,3 +367,57 @@ func TestGenerateHandler_PathTraversalName_Returns400(t *testing.T) {
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Contains(t, resp, "error")
 }
+
+// ─── Addon cardinality ────────────────────────────────────────────────────────
+
+func TestGenerateHandler_MultipleAddonsPerCategory_Returns400(t *testing.T) {
+	r := newTestRouter()
+
+	payload := map[string]interface{}{
+		"projectType": "microservice",
+		"goVersion":   "1.24.6",
+		"framework":   "gin",
+		"moduleName":  "github.com/acme/x",
+		"name":        "x",
+		"selectedAddons": map[string][]string{
+			"cache": {"redis", "memcached"},
+		},
+	}
+	body, _ := json.Marshal(payload)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/generate", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Contains(t, resp, "error")
+	assert.Contains(t, resp["error"], "cache")
+}
+
+func TestGenerateHandler_SingleAddonPerCategory_Returns200(t *testing.T) {
+	r := newTestRouter()
+
+	payload := map[string]interface{}{
+		"projectType": "microservice",
+		"goVersion":   "1.24.6",
+		"framework":   "gin",
+		"moduleName":  "github.com/acme/x",
+		"name":        "x",
+		"selectedAddons": map[string][]string{
+			"cache":    {"redis"},
+			"database": {"gorm"},
+		},
+	}
+	body, _ := json.Marshal(payload)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/generate", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "application/zip", w.Header().Get("Content-Type"))
+}
