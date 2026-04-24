@@ -175,5 +175,6 @@ func TestListAddonsCommand_OutputStartsWithAlphabeticalCategory(t *testing.T) {
 	lines := strings.Split(strings.TrimSpace(out), "\n")
 	require.GreaterOrEqual(t, len(lines), 3)
 	firstDataLine := lines[2]
-	assert.Contains(t, firstDataLine, "cache")
+	// "ai" is the alphabetically first category in SupportedAddonsMap.
+	assert.Contains(t, firstDataLine, "ai")
 }

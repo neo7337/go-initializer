@@ -154,7 +154,7 @@ func TestRunNew_UnknownProjectType(t *testing.T) {
 		name:        "x",
 		module:      "github.com/acme/x",
 		goVersion:   "1.24.6",
-		projectType: "api-server",
+		projectType: "not-a-real-type",
 		framework:   "gin",
 		output:      t.TempDir(),
 	}

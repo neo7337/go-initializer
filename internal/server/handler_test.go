@@ -165,8 +165,11 @@ func TestGenerateHandler_InvalidGoVersion(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestGenerateHandler_APIServerNotInRegistry_Returns400(t *testing.T) {
-	// api-server passes the validator oneof check but is not in GeneratorRegistry
+func TestGenerateHandler_APIServer_Returns200(t *testing.T) {
+	// api-server is a fully supported project type; a well-formed request must
+	// return 200 with a zip body. (The "not in registry" path in the handler is
+	// unreachable via HTTP because the validator's oneof rule rejects any type
+	// that is not registered.)
 	r := newTestRouter()
 
 	payload := map[string]interface{}{
@@ -183,11 +186,8 @@ func TestGenerateHandler_APIServerNotInRegistry_Returns400(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-
-	var resp map[string]interface{}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	assert.Contains(t, resp, "error")
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "application/zip", w.Header().Get("Content-Type"))
 }
 
 func TestGenerateHandler_SimpleProject_ReturnsZip(t *testing.T) {
