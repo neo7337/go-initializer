@@ -10,11 +10,11 @@ Pick a project type, framework, and addons. Get a fully wired, immediately runna
 [![Frontend CI](https://github.com/neo7337/go-initializer/actions/workflows/frontend.yml/badge.svg)](https://github.com/neo7337/go-initializer/actions/workflows/frontend.yml)
 [![Security Scan](https://github.com/neo7337/go-initializer/actions/workflows/security.yml/badge.svg)](https://github.com/neo7337/go-initializer/actions/workflows/security.yml)
 [![Latest Release](https://img.shields.io/github/v/release/neo7337/go-initializer?color=blue)](https://github.com/neo7337/go-initializer/releases/latest)
-[![Go Version](https://img.shields.io/badge/go-1.25-00ADD8?logo=go)](https://go.dev)
+[![Go Version](https://img.shields.io/badge/go-1.26-00ADD8?logo=go)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/neo7337/goinitializer?label=docker%20pulls)](https://hub.docker.com/r/neo7337/goinitializer)
 
-[Web UI](https://go-initializer.dev) · [Docs](https://go-initializer.dev/docs) · [Contributing](CONTRIBUTING.md) · [Roadmap](https://github.com/neo7337/go-initializer/projects)
+[Web UI](https://goinitializer.com) · [Docs](https://goinitializer.com/docs) · [Contributing](CONTRIBUTING.md) · [Roadmap](https://github.com/neo7337/go-initializer/projects)
 
 </div>
 

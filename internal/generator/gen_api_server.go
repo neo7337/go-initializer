@@ -60,8 +60,7 @@ func (g *APIServerGenerator) Generate(ctx context.Context, request CreateProject
 	}
 
 	// README.md
-	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), []byte(readmeContent)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), GenerateReadme(request)); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}
@@ -149,6 +148,20 @@ func (g *APIServerGenerator) Generate(ctx context.Context, request CreateProject
 
 	// .gitignore
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	// .env.example — only when secret-requiring addons are selected
+	if envContent := GenerateEnvExample(request); envContent != nil {
+		if err := addToZip(zipWriter, fmt.Sprintf("%s/.env.example", folderName), envContent); err != nil {
+			log.Printf("[ERROR] %v", err)
+			return nil, err
+		}
+	}
+
+	// internal/service/service_test.go — placeholder test
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/internal/service/service_test.go", folderName), GeneratePlaceholderTest("service")); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}

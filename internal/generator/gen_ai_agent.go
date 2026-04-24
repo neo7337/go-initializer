@@ -47,8 +47,7 @@ func (g *AIAgentGenerator) Generate(ctx context.Context, request CreateProjectRe
 	folderName := request.Name
 
 	// README.md
-	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), []byte(readmeContent)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), GenerateReadme(request)); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}
@@ -144,6 +143,20 @@ func (g *AIAgentGenerator) Generate(ctx context.Context, request CreateProjectRe
 
 	// .gitignore
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	// .env.example — AI frameworks always require an API key (except ollama)
+	if envContent := GenerateEnvExample(request); envContent != nil {
+		if err := addToZip(zipWriter, fmt.Sprintf("%s/.env.example", folderName), envContent); err != nil {
+			log.Printf("[ERROR] %v", err)
+			return nil, err
+		}
+	}
+
+	// agent/agent_test.go — placeholder test
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/agent/agent_test.go", folderName), GeneratePlaceholderTest("agent")); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}

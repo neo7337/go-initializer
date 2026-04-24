@@ -42,8 +42,7 @@ func (g *CLIAppGenerator) Generate(ctx context.Context, request CreateProjectReq
 	folderName := request.Name
 
 	// README.md
-	readmeContent := fmt.Sprintf("# %s\n\n%s", folderName, request.Description)
-	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), []byte(readmeContent)); err != nil {
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/README.md", folderName), GenerateReadme(request)); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}
@@ -120,6 +119,20 @@ func (g *CLIAppGenerator) Generate(ctx context.Context, request CreateProjectReq
 
 	// .gitignore
 	if err := addToZip(zipWriter, fmt.Sprintf("%s/.gitignore", folderName), GenerateGitignore()); err != nil {
+		log.Printf("[ERROR] %v", err)
+		return nil, err
+	}
+
+	// .env.example — only when secret-requiring addons are selected
+	if envContent := GenerateEnvExample(request); envContent != nil {
+		if err := addToZip(zipWriter, fmt.Sprintf("%s/.env.example", folderName), envContent); err != nil {
+			log.Printf("[ERROR] %v", err)
+			return nil, err
+		}
+	}
+
+	// cmd/<name>_test.go — placeholder test
+	if err := addToZip(zipWriter, fmt.Sprintf("%s/cmd/%s_test.go", folderName, folderName), GeneratePlaceholderTest("cmd")); err != nil {
 		log.Printf("[ERROR] %v", err)
 		return nil, err
 	}

@@ -4,13 +4,13 @@ on:
     pull_request:
         branches: [main]
         paths:
-            - 'cmd/server/**'
+            - 'cmd/**'
             - 'internal/**'
             - '.github/workflows/backend.yml'
     push:
         branches: [main]
         paths:
-            - 'cmd/server/**'
+            - 'cmd/**'
             - 'internal/**'
             - '.github/workflows/backend.yml'
 
@@ -18,7 +18,7 @@ permissions: {}
 
 jobs:
     build_and_test_backend:
-        name: Build Backend
+        name: Build and Test Backend
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -35,4 +35,6 @@ jobs:
             - name: Install dependencies
               run: go mod download
             - name: Build backend
-              run: go build -v ./cmd/server/...
+              run: go build -v ./cmd/...
+            - name: Test backend
+              run: go test -race -v ./...
