@@ -95,6 +95,22 @@ describe('useGeneratorForm – handleAddonChange', () => {
     expect(result.current.selectedAddons.cache).not.toContain('redis');
   });
 
+  it('replaces the current selection when a different addon in the same category is chosen', async () => {
+    const { result } = renderHook(() => useGeneratorForm());
+    act(() => result.current.handleAddonChange('cache', 'redis'));
+    expect(result.current.selectedAddons.cache).toEqual(['redis']);
+    act(() => result.current.handleAddonChange('cache', 'memcached'));
+    expect(result.current.selectedAddons.cache).toEqual(['memcached']);
+    expect(result.current.selectedAddons.cache).not.toContain('redis');
+  });
+
+  it('never accumulates more than one addon per category', async () => {
+    const { result } = renderHook(() => useGeneratorForm());
+    act(() => result.current.handleAddonChange('cache', 'redis'));
+    act(() => result.current.handleAddonChange('cache', 'memcached'));
+    expect(result.current.selectedAddons.cache.length).toBe(1);
+  });
+
   it('does not affect other categories', async () => {
     const { result } = renderHook(() => useGeneratorForm());
     act(() => result.current.handleAddonChange('cache', 'redis'));

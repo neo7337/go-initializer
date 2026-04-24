@@ -80,12 +80,11 @@ export function useGeneratorForm() {
 
   const handleAddonChange = (category: AddonCategory, value: string) => {
     setSelectedAddons(prev => {
-      const alreadySelected = prev[category].includes(value);
+      const currentList = prev[category] || [];
+      const alreadySelected = currentList.includes(value);
       return {
         ...prev,
-        [category]: alreadySelected
-          ? prev[category].filter((v: string) => v !== value)
-          : [...prev[category], value],
+        [category]: alreadySelected ? [] : [value],
       };
     });
   };
